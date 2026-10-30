@@ -352,3 +352,13 @@ header.tn-head[title='Quota'] {
 	padding: 6px 10px !important;
 	font-size: 13px !important;
 }
+
+/* Quota status-line color choices. Tern keeps tone on the segment; map the
+   named tones to the theme's semantic colors. */
+#statusline .sl-plugin[data-plugin='quota'][data-tone='success'] { color: var(--ok); }
+#statusline .sl-plugin[data-plugin='quota'][data-tone='warning'] { color: var(--warn); }
+#statusline .sl-plugin[data-plugin='quota'][data-tone='error'] { color: var(--bad); }
+#statusline .sl-plugin[data-plugin='quota'][data-tone='info'] { color: var(--sf-info, var(--accent)); }
+#statusline .sl-plugin[data-plugin='quota'][data-tone='accent'] { color: var(--accent); }
+#statusline .sl-plugin[data-plugin='quota'][data-tone='muted'] { color: var(--t3); }
+#statusline .sl-plugin[data-plugin='quota'][data-tone='neutral'] { color: var(--t1); }

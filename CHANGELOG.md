@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.2 — 2026-10-31
+
+- Removed the download icon and the middle dot from the quota module.
+- Split network speed into separately colored download/upload segments.
+- Added download and upload color settings.
+- Verified settings survive closing the detail page and reloading the plugin.
+
 ## 0.6.1 — 2026-10-31
 
 - Relicensed under PolyForm Noncommercial 1.0.0; commercial use requires a

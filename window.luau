@@ -58,12 +58,15 @@ end
 
 local function status_format(settings: any): { [string]: any }
 	local sf = type(settings) == "table" and type(settings.status_format) == "table" and settings.status_format or {}
+	local tones = { success = true, error = true, warning = true, info = true, accent = true, muted = true, neutral = true }
 	return {
 		mode = sf.mode == "used" and "used" or "remaining",
 		window = sf.window ~= false,
 		reset = sf.reset ~= false,
 		percent = sf.percent ~= false,
 		net = sf.net ~= false,
+		net_down = tones[sf.net_down] and sf.net_down or "success",
+		net_up = tones[sf.net_up] and sf.net_up or "error",
 	}
 end
 
@@ -106,7 +109,7 @@ local function segment(item: any): { [string]: any }?
 			text = text .. " " .. table.concat(first, " ")
 		end
 		if sf.percent then
-			text = #first > 0 and (text .. " · " .. pct .. "%") or (text .. " " .. pct .. "%")
+			text = #first > 0 and (text .. " " .. pct .. "%") or (text .. " " .. pct .. "%")
 		end
 		return {
 			text = text,
@@ -158,6 +161,8 @@ local function format_signature(settings: any): string
 		tostring(sf.reset),
 		tostring(sf.percent),
 		tostring(sf.net),
+		sf.net_down,
+		sf.net_up,
 	}, ",")
 end
 
@@ -192,13 +197,19 @@ local function rebuild()
 	local sf = status_format(settings)
 	if sf.net and type(net) == "table" and type(net.down) == "number" and type(net.up) == "number"
 		and os.time() - (tonumber(net.at) or 0) <= 12 then
-		local net_text = string.format("↓ %s ↑ %s", speed_text(net.down), speed_text(net.up))
+		local down_text = "↓ " .. speed_text(net.down)
+		local up_text = "↑ " .. speed_text(net.up)
 		if #out > 0 then
-			net_text = "| " .. net_text
+			down_text = "| " .. down_text
 		end
 		out[#out + 1] = {
-			text = net_text,
-			icon = "download",
+			text = down_text,
+			tone = sf.net_down,
+			command = "plugin.quota.settings",
+		}
+		out[#out + 1] = {
+			text = up_text,
+			tone = sf.net_up,
 			command = "plugin.quota.settings",
 		}
 	end

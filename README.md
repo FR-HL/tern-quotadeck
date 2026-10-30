@@ -45,29 +45,31 @@ The default segment combines the first window, its reset countdown and the
 remaining percentage:
 
 ```text
-OC 5h 4h32m · 96%
+OC 5h 4h32m 96%
 ```
 
 A separate network module follows it:
 
 ```text
-OC 5h 4h32m · 96% | ↓ 2.3 MB/s ↑ 38 KB/s
+OC 5h 4h32m 96% | ↓ 2.3 MB/s ↑ 38 KB/s
 ```
 
 Settings → **Status line** lets you choose:
 
 - value: remaining or used
-- show window label, reset countdown, percentage and network speed
+- show window label, reset countdown, percentage and network speed; the speed module has separate download/upload colors
 
 For example, countdown plus remaining only:
 
 ```text
-OC 4h32m · 96%
+OC 4h32m 96%
 ```
 
-Network speed is sampled from the operating system's adapter counters every
-few seconds. It is currently implemented with PowerShell, so the speed module
-is Windows-only; quota segments work wherever Tern runs.
+Download and upload are separate status-line segments with their own color
+settings and no extra icon. Network speed is sampled from the operating
+system's adapter counters every few seconds. It is currently implemented with
+PowerShell, so the speed module is Windows-only; quota segments work wherever
+Tern runs.
 
 ## Providers
 

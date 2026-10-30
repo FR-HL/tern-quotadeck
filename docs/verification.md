@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.6.1 · 2026-10-31
+Tern 0.9.8 · plugin 0.6.2 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 
@@ -16,7 +16,7 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
   are not split. Example:
 
   ```text
-  OC 5h 4h32m · 96% | ↓ 2.3 MB/s ↑ 38 KB/s
+  OC 5h 4h32m 96% | ↓ 2.3 MB/s ↑ 38 KB/s
   ```
 
 - Bottom dock: three equal-width tabs, consistent 12px outer padding and gap;

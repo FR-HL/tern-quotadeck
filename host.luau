@@ -59,6 +59,13 @@ local function settings(): { [string]: any }
 	if type(sf.net) ~= "boolean" then
 		sf.net = true
 	end
+	local tones = { success = true, error = true, warning = true, info = true, accent = true, muted = true, neutral = true }
+	if not tones[sf.net_down] then
+		sf.net_down = "success"
+	end
+	if not tones[sf.net_up] then
+		sf.net_up = "error"
+	end
 	return stored
 end
 
@@ -591,6 +598,30 @@ local function settings_view(state: any, settings_value: { [string]: any }): any
 			actions = { click = "status_toggle=" .. key },
 		})
 	end
+	local COLOR_OPTIONS = {
+		{ "success", i18n.t(l, "green") },
+		{ "error", i18n.t(l, "red") },
+		{ "warning", i18n.t(l, "yellow") },
+		{ "info", i18n.t(l, "blue") },
+		{ "accent", i18n.t(l, "orange") },
+		{ "muted", i18n.t(l, "gray") },
+		{ "neutral", i18n.t(l, "white") },
+	}
+	local down_colors: { any } = {}
+	local up_colors: { any } = {}
+	for _, option in ipairs(COLOR_OPTIONS) do
+		local tone, label = option[1], option[2]
+		down_colors[#down_colors + 1] = tern.ui.el("button", {
+			class = "q-choice" .. (sf.net_down == tone and " q-choice--on" or ""),
+			text = label,
+			actions = { click = "status_net_down=" .. tone },
+		})
+		up_colors[#up_colors + 1] = tern.ui.el("button", {
+			class = "q-choice" .. (sf.net_up == tone and " q-choice--on" or ""),
+			text = label,
+			actions = { click = "status_net_up=" .. tone },
+		})
+	end
 
 	return tern.ui.col({ tern.ui.node("col", { gap = "lg", role = "quota-page" }, {
 		tern.ui.text({ tern.ui.span(i18n.t(l, "settings"), "strong") }),
@@ -615,6 +646,14 @@ local function settings_view(state: any, settings_value: { [string]: any }): any
 		tern.ui.el("div", { class = "q-setting" }, {
 			tern.ui.text({ tern.ui.span(i18n.t(l, "status_show"), "muted") }),
 			tern.ui.el("div", { class = "q-choices" }, toggles),
+		}),
+		tern.ui.el("div", { class = "q-setting" }, {
+			tern.ui.text({ tern.ui.span(i18n.t(l, "down_color"), "muted") }),
+			tern.ui.el("div", { class = "q-choices" }, down_colors),
+		}),
+		tern.ui.el("div", { class = "q-setting" }, {
+			tern.ui.text({ tern.ui.span(i18n.t(l, "up_color"), "muted") }),
+			tern.ui.el("div", { class = "q-choices" }, up_colors),
 		}),
 	}) })
 end
@@ -728,6 +767,14 @@ tern.block.define("detail", {
 			local key = ev.value
 			if key == "window" or key == "reset" or key == "percent" or key == "net" then
 				current.status_format[key] = not current.status_format[key]
+				tern.kv.set("settings", current)
+				cx:render()
+			end
+		elseif ev.act == "status_net_down" or ev.act == "status_net_up" then
+			local key = ev.act == "status_net_up" and "net_up" or "net_down"
+			local tones = { success = true, error = true, warning = true, info = true, accent = true, muted = true, neutral = true }
+			if tones[ev.value] then
+				current.status_format[key] = ev.value
 				tern.kv.set("settings", current)
 				cx:render()
 			end
