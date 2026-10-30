@@ -1,5 +1,7 @@
 # Quota
 
+English | [简体中文](README.zh-CN.md)
+
 Remaining coding-agent quota in Tern's status line, with a native detail page.
 
 ![Quota detail page](docs/preview.png)
@@ -160,6 +162,23 @@ return {
 Add it to `PROVIDERS` in `host.luau`. Keep requests read-only and rate limited;
 never write a credential.
 
-## License
+## License and attribution
 
-MIT
+This project is **source-available, not OSI-approved open source**. It uses the
+[PolyForm Noncommercial License 1.0.0](LICENSE); commercial use requires a
+separate written license from the copyright holder.
+
+- Required Notice: Copyright (c) 2026 FR-HL
+  (https://github.com/FR-HL/tern-quota)
+- Keep `LICENSE` and `NOTICE` with any copy.
+- If you redistribute a modified version, link back to the original repository
+  and clearly state your changes.
+
+## Credits
+
+- Built for [Tern](https://stencil.so/tern) by Stencil.
+- Provider names, endpoints and CLI login formats belong to their respective
+  vendors. Quota is an independent, unofficial client and is not endorsed by
+  any provider.
+- No vendor documentation text or credential files are bundled with this
+  repository.

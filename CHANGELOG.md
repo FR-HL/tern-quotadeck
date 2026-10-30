@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1 — 2026-10-31
+
+- Relicensed under PolyForm Noncommercial 1.0.0; commercial use requires a
+  separate written license.
+- Added NOTICE with the Required Notice and attribution requirements.
+- Added bilingual English and Simplified Chinese README files.
+- Documented provider data sources, credits and modification attribution.
+
 ## 0.6.0 — 2026-10-31
 
 - Configurable status line: remaining or used value; window label, reset
