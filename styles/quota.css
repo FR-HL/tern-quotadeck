@@ -1,0 +1,354 @@
+/* Quota — Tern's tokens and gap scale.
+   Type 13/12 · radii 10/7 · spacing 16/8/2 · icons 12. */
+
+.sf-main[data-surface='plugin.quota.detail'],
+.sf-dock[data-surface='plugin.quota.detail'] {
+	--q-radius-card: 10px;
+	--q-radius-control: 7px;
+	--q-font: 13px;
+	--q-font-small: 12px;
+	--q-icon: 15px;
+	font-family: var(--sans);
+	font-size: var(--q-font);
+	line-height: 1.4;
+}
+
+.sf-main[data-surface='plugin.quota.detail'] {
+	padding: 16px;
+}
+
+.sf-dock[data-surface='plugin.quota.detail'] {
+	padding: 12px;
+	border-top: 1px solid var(--l2);
+}
+
+.sf-dock[data-surface='plugin.quota.detail'] .sf-row {
+	width: 100% !important;
+}
+
+.sf-main[data-surface='plugin.quota.detail'] .sf-text {
+	color: var(--t1);
+}
+
+/* Tern writes icon SVG sizes inline; both the node and the glyph need the
+   same box or the glyph spills over the text. */
+.sf-main[data-surface='plugin.quota.detail'] .sf-icon,
+.sf-main[data-surface='plugin.quota.detail'] .sf-icon .ico,
+.sf-main[data-surface='plugin.quota.detail'] .sf-icon > svg,
+.sf-dock[data-surface='plugin.quota.detail'] .sf-icon,
+.sf-dock[data-surface='plugin.quota.detail'] .sf-icon .ico,
+.sf-dock[data-surface='plugin.quota.detail'] .sf-icon > svg {
+	width: var(--q-icon) !important;
+	height: var(--q-icon) !important;
+	flex: none;
+}
+
+/* One group per provider; all groups share radius, inset and inner gap. */
+.q-card {
+	display: flex;
+	flex-direction: column;
+	background: var(--card);
+	border: 1px solid var(--l2);
+	border-radius: var(--q-radius-card);
+	padding: 10px 12px;
+	gap: 8px;
+	overflow: hidden;
+}
+
+.q-card--quiet {
+	background: transparent;
+}
+
+.q-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	min-height: 34px;
+	padding: 6px 4px;
+	background: transparent;
+	border: none;
+	border-radius: var(--q-radius-control);
+	color: var(--t1);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.q-head:hover {
+	background: var(--l1);
+}
+
+.q-head .sf-badge {
+	margin-left: auto;
+}
+
+/* One line: text plus vertical breathing room. */
+.q-row,
+.q-unsigned,
+.q-setting {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 30px;
+	padding: 2px 4px;
+	flex-wrap: wrap;
+	min-width: 0;
+}
+
+.q-row .sf-badge {
+	margin-left: auto;
+}
+
+.q-unsigned .sf-icon {
+	color: var(--t3);
+}
+
+.q-setting {
+	justify-content: space-between;
+}
+
+.q-choices {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+/* Controls keep a 28px hit target with one padding and radius. */
+.q-choice {
+	font-family: var(--sans);
+	font-size: var(--q-font-small);
+	color: var(--t2);
+	background: transparent;
+	border: 1px solid var(--l2);
+	border-radius: var(--q-radius-control);
+	min-height: 28px;
+	padding: 3px 10px;
+	cursor: pointer;
+	width: auto;
+	transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease,
+		filter 120ms ease;
+}
+
+.q-choice:hover {
+	background: transparent;
+	border-color: var(--t3);
+	color: var(--t1);
+}
+
+.q-choice--primary,
+.q-choice--on {
+	color: #1a1205;
+	background: var(--accent);
+	border-color: var(--accent);
+	font-weight: 600;
+}
+
+.q-choice--primary:hover,
+.q-choice--on:hover {
+	color: #1a1205;
+	background: var(--accent);
+	border-color: var(--accent);
+	filter: brightness(1.08);
+	box-shadow: 0 0 0 1px var(--t1) inset;
+}
+
+.q-choice--quiet {
+	color: var(--t3);
+	background: transparent;
+	border-color: var(--l2);
+}
+
+.q-choice--quiet:hover {
+	color: var(--t1);
+	background: transparent;
+	border-color: var(--t3);
+}
+
+.q-tab {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	width: auto !important;
+	flex: 1 1 0 !important;
+	align-self: stretch;
+	min-width: 0;
+	min-height: 30px;
+	padding: 5px 8px;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--q-radius-control);
+	color: var(--t3);
+	font: inherit;
+	cursor: pointer;
+}
+
+.q-tab:hover {
+	background: transparent;
+	color: var(--t1);
+	border-color: var(--l2);
+}
+
+.q-tab--on {
+	color: var(--t1);
+	background: var(--l1);
+	border-color: var(--l2);
+}
+
+/* Reading measure on wide tabs; full width in narrow panes. */
+[data-role='quota-page'] {
+	width: 100% !important;
+	max-width: 860px !important;
+	min-width: 0 !important;
+}
+
+/* Window rows: 40px target, fixed columns. */
+.q-window {
+	min-height: 40px;
+	padding: 4px;
+	border-radius: var(--q-radius-control);
+}
+
+.q-window:hover {
+	background: var(--l1);
+}
+
+.q-window .sf-progress {
+	min-width: 72px;
+}
+
+[data-role='quota-label'] {
+	overflow: hidden;
+}
+
+[data-role='quota-label'] .sf-text {
+	color: var(--t2);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+[data-role='quota-pct'],
+[data-role='quota-reset'] {
+	text-align: right;
+}
+
+[data-role='quota-pct'] .sf-text {
+	color: var(--t1);
+	font-weight: 500;
+}
+
+[data-role='quota-reset'] .sf-text {
+	color: var(--t3);
+}
+
+/* Status-line rows put their control on one right edge. */
+.q-status-row .q-choice {
+	margin-left: auto;
+}
+
+/* Keep labels whole instead of breaking per character. */
+.q-choice,
+.q-tab,
+.q-tab .sf-text,
+.q-tab .sf-text span,
+.q-head .sf-text,
+.q-row .sf-text,
+.q-setting .sf-text,
+.q-unsigned .sf-text {
+	white-space: nowrap !important;
+	word-break: keep-all;
+}
+
+/* Narrow floating cards: keep the bottom dock on one line and tighten the
+   card chrome instead of letting labels wrap. */
+.tn-pane.pip [data-surface='plugin.quota.detail'] .sf-main {
+	padding: 12px;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-tab {
+	gap: 0;
+	padding: 4px 6px;
+	font-size: 11px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-tab .sf-icon {
+	display: none;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-card {
+	padding: 8px 10px;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-row,
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-setting {
+	gap: 6px;
+	padding: 2px;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-row {
+	flex-wrap: nowrap;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-row .sf-icon {
+	display: none;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-row > .sf-text {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-row .sf-badge {
+	flex: none;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-row .q-choices {
+	width: auto;
+	margin-left: auto;
+	flex-wrap: nowrap;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-choice {
+	font-size: 11px;
+	padding: 3px 8px;
+}
+
+/* PiP: drop the reset column rather than squeeze or clip it. */
+.tn-pane.pip [data-surface='plugin.quota.detail'] {
+	padding: 10px;
+}
+
+.tn-pane.pip [data-surface='plugin.quota.detail'] .q-card {
+	padding: 8px 10px;
+}
+
+.tn-pane.pip [data-role='quota-reset'] {
+	display: none;
+}
+
+.tn-pane.pip [data-role='quota-label'] {
+	flex-basis: 42% !important;
+}
+
+.tn-pane.pip [data-role='quota-pct'] {
+	flex-basis: 18% !important;
+}
+
+.tn-pane.pip .q-window .sf-progress {
+	flex-basis: 30% !important;
+}
+
+/* Tern's floating chrome is 27px by default; give this pane a standard 40px
+   title strip while keeping its native drag and window controls. */
+header.tn-head[title='Quota'] {
+	min-height: 40px !important;
+	padding: 6px 10px !important;
+	font-size: 13px !important;
+}
