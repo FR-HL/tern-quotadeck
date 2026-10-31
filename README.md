@@ -18,6 +18,7 @@ hides the other providers.
   logs directly
 - Provider icon strip on Overview: click one to show only that provider's
   quota and sessions; click **All** to restore
+- Remaining-history sparkline on each quota card, from locally recorded samples
 - Drop-in adapters: every `.luau` in `providers/`, `sources/` and `contexts/`
   is loaded automatically
 - Magpie's providers appear automatically through its local quota API,
@@ -170,6 +171,8 @@ private to your user account, not as a secret vault.
 - Context adapters currently cover omp, Claude Code and Codex. Other agents
   need an adapter; a session without a known context window still shows used
   tokens, without a percentage.
+- Remaining history starts when the plugin first runs; native agent logs do not
+  provide retroactive cost history. A spend chart needs a cost source.
 - Network speed is currently Windows-only.
 
 ## Development

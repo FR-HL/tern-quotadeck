@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.9 — 2026-10-31
+
+- Record up to seven days of remaining-quota samples.
+- Show a remaining-history sparkline on each quota card.
+
 ## 0.8.8 — 2026-10-31
 
 - Click a Context card to expand provider, full model, used/window,

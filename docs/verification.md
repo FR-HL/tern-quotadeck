@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.8.8 · 2026-10-31
+Tern 0.9.8 · plugin 0.8.9 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 
@@ -29,6 +29,9 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
   session path, then collapsed again. omp's numeric millisecond timestamp and
   Codex's direct context window were handled. The bottom dock stayed at three
   tabs.
+- Remaining history: each quota card rendered a spark chart (`sf-chart`,
+  summary `Remaining history · N`) from local samples; the history store keeps
+  up to 7 days.
 - Overview filter: the icon strip showed All, OpenCode Go, Codex, Claude and
   Open Design; choosing OpenCode kept only its quota card and dropped unrelated
   context, while Codex showed its context and All restored the complete page.

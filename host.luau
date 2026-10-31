@@ -160,7 +160,7 @@ local function publish(state: { [string]: any })
 		end
 	end
 	history[#history + 1] = point
-	while #history > 288 do
+	while #history > 10_080 do
 		table.remove(history, 1)
 	end
 	state.history = history
@@ -691,7 +691,24 @@ local function provider_windows(item: any): any
 	return tern.ui.node("col", { gap = "xs" }, rows)
 end
 
-local function provider_card(item: any, collapsed: boolean): any
+local function history_series(state: any, id: string, limit: number): { any }
+	local values = {}
+	for _, point in ipairs(type(state) == "table" and state.history or {}) do
+		local value = tonumber(point[id])
+		if value then
+			values[#values + 1] = {
+				value = value,
+				label = os.date("%H:%M", tonumber(point.t) or 0),
+			}
+		end
+	end
+	while #values > limit do
+		table.remove(values, 1)
+	end
+	return values
+end
+
+local function provider_card(item: any, collapsed: boolean, state: any): any
 	local header = tern.ui.el("button", { class = "q-head", actions = { click = "fold=" .. item.id } }, {
 		tern.ui.node("icon", { name = item.icon or "puzzle" }),
 		tern.ui.text({ tern.ui.span(item.name or item.id or "Provider", "strong") }),
@@ -700,6 +717,15 @@ local function provider_card(item: any, collapsed: boolean): any
 	local children = { header }
 	if not collapsed then
 		children[#children + 1] = provider_windows(item)
+		local series = history_series(state, item.id, 48)
+		if #series > 1 then
+			children[#children + 1] = tern.ui.node("chart", {
+				kind = "spark",
+				token = "success",
+				series = series,
+				summary = i18n.t(lang(), "history_remaining") .. " · " .. #series,
+			})
+		end
 		if type(item.balance) == "string" and item.balance ~= "" then
 			children[#children + 1] = tern.ui.text({ tern.ui.span(item.balance, "dim") })
 		end
@@ -815,7 +841,7 @@ local function main_view(state: any, settings_value: { [string]: any }, block_st
 		local item = state.providers and state.providers[id]
 		if type(item) == "table" and settings_value.hidden[id] ~= true and item.status == "ok"
 			and (selected == "all" or id == selected) then
-			nodes[#nodes + 1] = provider_card(item, settings_value.collapsed[id] == true)
+			nodes[#nodes + 1] = provider_card(item, settings_value.collapsed[id] == true, state)
 		end
 	end
 	local context = context_section(selected, block_state)

@@ -13,6 +13,7 @@ Quota 只读取本机各 CLI 已经保存的登录信息，由 Tern 守护进程
 - OpenCode Go、Claude、Codex、GitHub Copilot、Cursor、Gemini CLI、DeepSeek
 - **概览**里的上下文区块直接读取 omp、Claude Code、Codex 的会话记录
 - 概览顶部有服务商图标条：点一个只显示该服务商的额度和会话，点 **全部** 恢复
+- 每张额度卡片显示本地记录的剩余额度趋势图
 - 可插拔适配器：`providers/`、`sources/`、`contexts/` 下的每个 `.luau` 自动加载
 - Magpie 的服务商通过本地额度接口自动出现，包括 Open Design 和插件管理的账号
 - 一个自定义接口，自动识别 New API / One API 中转或 OpenAI 计费接口
@@ -126,6 +127,7 @@ DeepSeek 密钥和自定义接口都使用 Tern 原生输入框，支持正常�
 - Quota 是窗口插件：读取窗口所在机器的数据，不读取远程主机。
 - 上下文显示各 Agent 最近的会话（每个最多 8 条），不一定对应某个 pane；并行会话时可能有歧义。
 - 上下文适配器目前覆盖 omp、Claude Code、Codex；其他 Agent 需要自己加适配器。窗口未知时仍显示已用 token，但不显示百分比。
+- 剩余额度历史从插件首次运行开始记录；Agent 本地日志没有可回溯的成本历史，花费图表需要成本来源。
 - 网速目前仅支持 Windows。
 
 ## 开发
