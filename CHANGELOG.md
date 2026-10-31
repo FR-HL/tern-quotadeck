@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.3 — 2026-10-31
+
+- Provider status and actions are icons with tooltips: signed out, sign in,
+  key, hide, show and remove.
+- Keep provider icons visible in narrow floating cards.
+- Status and action icons share one tile: same frame, background and size;
+  color alone distinguishes them.
+
 ## 0.7.2 — 2026-10-31
 
 - Keep the last Magpie provider list across plugin reloads and gateway restarts.

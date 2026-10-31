@@ -492,6 +492,35 @@ local function status_label(status: string): (string, string)
 	return i18n.t(l, "unavailable"), "error"
 end
 
+local STATE_ICON = {
+	ok = "check",
+	auth = "key",
+	signed_out = "lock",
+}
+
+local function status_icon(status: string): any
+	local label = select(1, status_label(status))
+	local icon = STATE_ICON[status] or "alert-triangle"
+	return tern.ui.el("span", {
+		class = "q-state q-state--" .. status,
+		title = label,
+		attrs = { role = "img", ["aria-label"] = label },
+	}, {
+		tern.ui.node("icon", { name = icon }),
+	})
+end
+
+local function icon_button(icon: string, label: string, action: string, class: string): any
+	return tern.ui.el("button", {
+		class = class,
+		title = label,
+		attrs = { ["aria-label"] = label },
+		actions = { click = action },
+	}, {
+		tern.ui.node("icon", { name = icon }),
+	})
+end
+
 local function reset_text(iso: any): string
 	if type(iso) ~= "string" then
 		return ""
@@ -553,11 +582,10 @@ local function provider_windows(item: any): any
 end
 
 local function provider_card(item: any, collapsed: boolean): any
-	local label, tone = status_label(item.status)
 	local header = tern.ui.el("button", { class = "q-head", actions = { click = "fold=" .. item.id } }, {
 		tern.ui.node("icon", { name = item.icon or "puzzle" }),
 		tern.ui.text({ tern.ui.span(item.name or item.id or "Provider", "strong") }),
-		tern.ui.badge(label, tone),
+		status_icon(item.status),
 		tern.ui.node("icon", { name = collapsed and "chev-r" or "chev-up" }),
 	})
 	local children = { header }
@@ -602,22 +630,24 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 		local item = state.providers and state.providers[id]
 		if type(item) == "table" then
 			local hidden = settings_value.hidden[id] == true
-			local label, tone = status_label(item.status)
 			local actions: { any } = {}
 			local auto = item.source == "magpie"
 			if not auto then
-				local setup_text = id == "deepseek" and i18n.t(l, "set_key") or i18n.t(l, "sign_in")
-				actions[#actions + 1] = tern.ui.el("button", {
-					class = "q-choice q-choice--primary",
-					text = setup_text,
-					actions = { click = "setup=" .. id },
-				})
+				local setup_label = id == "deepseek" and i18n.t(l, "set_key") or i18n.t(l, "sign_in")
+				local setup_icon = id == "deepseek" and "key" or "log-in"
+				actions[#actions + 1] = icon_button(
+					setup_icon,
+					setup_label,
+					"setup=" .. id,
+					"q-choice q-icon-choice q-icon-choice--primary"
+				)
 			end
-			actions[#actions + 1] = tern.ui.el("button", {
-				class = "q-choice q-choice--quiet",
-				text = i18n.t(l, hidden and "show" or "hide"),
-				actions = { click = (hidden and "show=" or "hide=") .. id },
-			})
+			actions[#actions + 1] = icon_button(
+				hidden and "eye" or "eye-off",
+				i18n.t(l, hidden and "show" or "hide"),
+				(hidden and "show=" or "hide=") .. id,
+				"q-choice q-icon-choice q-icon-choice--quiet"
+			)
 			local name_spans = { tern.ui.span(item.name or id, "strong") }
 			if auto then
 				name_spans[#name_spans + 1] = tern.ui.span("  " .. i18n.t(l, "auto"), "dim")
@@ -629,7 +659,7 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 					basis = 0.30,
 					min = { w = 0 },
 				}),
-				tern.ui.badge(label, tone),
+				status_icon(item.status),
 				tern.ui.el("div", { class = "q-choices" }, actions),
 			})
 		end
@@ -641,7 +671,6 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 	local custom_rows: { any } = {}
 	for index, relay in ipairs(relays) do
 		local item = state.providers and state.providers["relay-" .. index]
-		local status, tone = status_label(type(item) == "table" and item.status or "error")
 		local kind_label
 		if relay.kind == "newapi" then
 			kind_label = i18n.t(l, "new_api")
@@ -664,12 +693,13 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 					grow = 1,
 					min = { w = 0 },
 				}),
-				tern.ui.badge(status, tone),
-				tern.ui.el("button", {
-					class = "q-choice q-choice--quiet",
-					text = i18n.t(l, "remove"),
-					actions = { click = "remove_relay=" .. index },
-				}),
+				status_icon(type(item) == "table" and item.status or "error"),
+				icon_button(
+					"trash-2",
+					i18n.t(l, "remove"),
+					"remove_relay=" .. index,
+					"q-choice q-icon-choice q-icon-choice--danger"
+				),
 			}),
 		}
 		if type(item) == "table" and item.status ~= "ok" and item.error then
@@ -688,11 +718,12 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 		tern.ui.text({ tern.ui.span(i18n.t(l, "custom"), "strong") }),
 		tern.ui.text({ tern.ui.span(i18n.t(l, "custom_hint"), "dim") }),
 		tern.ui.el("div", { class = "q-choices" }, {
-			tern.ui.el("button", {
-				class = "q-choice q-choice--primary",
-				text = i18n.t(l, "add_custom"),
-				actions = { click = "add_relay=auto" },
-			}),
+			icon_button(
+				"plus",
+				i18n.t(l, "add_custom"),
+				"add_relay=auto",
+				"q-choice q-icon-choice q-icon-choice--primary"
+			),
 		}),
 		tern.ui.node("col", { gap = "xs" }, custom_rows),
 	}) })

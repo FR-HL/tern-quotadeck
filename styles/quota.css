@@ -100,6 +100,11 @@
 	margin-left: auto;
 }
 
+.q-head > .q-state,
+.q-row > .q-state {
+	margin-left: auto;
+}
+
 .q-unsigned .sf-icon {
 	color: var(--t3);
 }
@@ -137,7 +142,71 @@
 	color: var(--t1);
 }
 
-.q-choice--primary,
+.q-icon-choice,
+.q-state {
+	width: 30px;
+	height: 30px;
+	min-width: 30px;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	border: 1px solid var(--l2);
+	border-radius: var(--q-radius-control);
+	background: var(--l1);
+	color: var(--t2);
+}
+
+.q-icon-choice {
+	cursor: pointer;
+	transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.q-icon-choice:hover {
+	background: var(--l2);
+	border-color: var(--t3);
+	color: var(--t1);
+}
+
+.q-icon-choice--primary {
+	color: var(--accent);
+}
+
+.q-icon-choice--quiet {
+	color: var(--t3);
+}
+
+.q-icon-choice--danger {
+	color: var(--bad);
+}
+
+.q-state {
+	cursor: default;
+}
+
+.q-state--ok {
+	color: var(--ok);
+}
+
+.q-state--auth {
+	color: var(--bad);
+}
+
+.q-state--signed_out {
+	color: var(--t3);
+}
+
+.q-state--error {
+	color: var(--warn);
+}
+
+.q-icon-choice .sf-icon,
+.q-state .sf-icon {
+	width: 16px !important;
+	height: 16px !important;
+}
+
 .q-choice--on {
 	color: #1a1205;
 	background: var(--accent);
@@ -145,25 +214,12 @@
 	font-weight: 600;
 }
 
-.q-choice--primary:hover,
 .q-choice--on:hover {
 	color: #1a1205;
 	background: var(--accent);
 	border-color: var(--accent);
 	filter: brightness(1.08);
 	box-shadow: 0 0 0 1px var(--t1) inset;
-}
-
-.q-choice--quiet {
-	color: var(--t3);
-	background: transparent;
-	border-color: var(--l2);
-}
-
-.q-choice--quiet:hover {
-	color: var(--t1);
-	background: transparent;
-	border-color: var(--t3);
 }
 
 .q-tab {
@@ -307,7 +363,7 @@
 
 .tn-pane.pip [data-surface='plugin.quota.detail'] .q-row .q-choices {
 	width: auto;
-	margin-left: auto;
+	margin-left: 0;
 	flex-wrap: nowrap;
 }
 

@@ -1,7 +1,7 @@
 schema = 1
 id = "quota"
 name = "Quota"
-version = "0.7.2"
+version = "0.7.3"
 description = "Remaining quota, reset countdowns and network speed for coding-agent plans in Tern."
 icon = "gauge"
 host = "host.luau"
