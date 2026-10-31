@@ -14,7 +14,8 @@ hides the other providers.
 ## Features
 
 - OpenCode Go, Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and DeepSeek
-- **Context** tab reading omp, Claude Code and Codex session logs directly
+- **Context** section on Overview, reading omp, Claude Code and Codex session
+  logs directly
 - Drop-in adapters: every `.luau` in `providers/`, `sources/` and `contexts/`
   is loaded automatically
 - Magpie's providers appear automatically through its local quota API,
@@ -118,9 +119,9 @@ remembered.
 
 The page has three tabs in the bottom dock:
 
-- **Overview** — quota cards only. No login, key or provider settings.
-- **Context** — each agent's latest session, read from its own log: omp,
-  Claude Code and Codex; shows used/window, percentage and age.
+- **Overview** — quota cards, followed by a **Context** section with each
+  agent's latest session from its own log (omp, Claude Code and Codex):
+  used/window, percentage and age. No login, key or provider settings.
 - **Providers** — one icon-only status control per provider: a check when
   normal, otherwise the **Sign in** / **Key** action. Then **grid** controls
   the overview and **gauge** controls the status bar; each is labelled on

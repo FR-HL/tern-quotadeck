@@ -702,6 +702,8 @@ local function tab(label: string, icon: string, action: string, active: boolean)
 	})
 end
 
+local context_section
+
 local function main_view(state: any, settings_value: { [string]: any }): any
 	local l = lang()
 	local nodes: { any } = {}
@@ -711,8 +713,12 @@ local function main_view(state: any, settings_value: { [string]: any }): any
 			nodes[#nodes + 1] = provider_card(item, settings_value.collapsed[id] == true)
 		end
 	end
-	if #nodes == 0 then
+	local context = context_section()
+	if #nodes == 0 and not context then
 		nodes[1] = tern.ui.text({ tern.ui.span(i18n.t(l, "no_providers"), "muted") })
+	end
+	if context then
+		nodes[#nodes + 1] = context
 	end
 	return tern.ui.col({ tern.ui.node("col", { gap = "lg", role = "quota-page" }, nodes) })
 end
@@ -989,12 +995,12 @@ local function context_ago(iso: any): string
 	return string.format("%dd", secs // 86400)
 end
 
-local function context_view(): any
+context_section = function(): any?
 	local l = lang()
 	local stored = tern.kv.get("context_state")
 	local sessions = type(stored) == "table" and stored.sessions or nil
-	if type(sessions) ~= "table" then
-		return tern.ui.col({ tern.ui.progress(nil, "Loading context…") })
+	if type(sessions) ~= "table" or #sessions == 0 then
+		return nil
 	end
 	local cards: { any } = {}
 	for _, session in ipairs(sessions) do
@@ -1054,14 +1060,10 @@ local function context_view(): any
 		tern.ui.text({ tern.ui.span(i18n.t(l, "context"), "strong") }),
 		tern.ui.text({ tern.ui.span(i18n.t(l, "context_hint"), "dim") }),
 	}
-	if #cards == 0 then
-		body[#body + 1] = tern.ui.text({ tern.ui.span(i18n.t(l, "context_empty"), "muted") })
-	else
-		for _, card in ipairs(cards) do
-			body[#body + 1] = card
-		end
+	for _, card in ipairs(cards) do
+		body[#body + 1] = card
 	end
-	return tern.ui.col({ tern.ui.node("col", { gap = "lg", role = "quota-page" }, body) })
+	return tern.ui.node("col", { gap = "md" }, body)
 end
 
 local function block_view(_state: any): any
@@ -1071,15 +1073,12 @@ local function block_view(_state: any): any
 	local dock = tern.ui.node("col", { gap = "none" }, {
 		tern.ui.node("row", { gap = "md" }, {
 			tab(i18n.t(l, "overview"), "gauge", "view=main", block_view_name == "main"),
-			tab(i18n.t(l, "context"), "activity", "view=context", block_view_name == "context"),
 			tab(i18n.t(l, "providers"), "sliders", "view=providers", block_view_name == "providers"),
 			tab(i18n.t(l, "settings"), "gear", "view=settings", block_view_name == "settings"),
 		}),
 	})
 	local page
-	if block_view_name == "context" then
-		page = context_view()
-	elseif type(state_value) ~= "table" then
+	if type(state_value) ~= "table" then
 		page = tern.ui.col({ tern.ui.progress(nil, "Loading quota…") })
 	elseif block_view_name == "providers" then
 		page = providers_view(state_value, settings_value)
@@ -1098,7 +1097,6 @@ tern.block.define("detail", {
 		local nav = tern.kv.get("navigate")
 		block_view_name = (nav == "providers" and "providers")
 			or (nav == "settings" and "settings")
-			or (nav == "context" and "context")
 			or "main"
 		if nav ~= nil then
 			tern.kv.set("navigate", nil)
@@ -1137,7 +1135,6 @@ tern.block.define("detail", {
 		elseif ev.act == "view" then
 			block_view_name = (ev.value == "providers" and "providers")
 				or (ev.value == "settings" and "settings")
-				or (ev.value == "context" and "context")
 				or "main"
 			cx:render()
 		elseif ev.act == "interval" then
@@ -1222,7 +1219,6 @@ local function block_poll()
 				tern.kv.set("navigate", nil)
 				block_view_name = (nav == "providers" and "providers")
 					or (nav == "settings" and "settings")
-					or (nav == "context" and "context")
 					or "main"
 			end
 			if block_cx and type(nav) == "string" then
