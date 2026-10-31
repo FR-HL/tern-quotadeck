@@ -5,21 +5,32 @@
 local util = require("./providers/util")
 local i18n = require("./i18n")
 
-local PROVIDERS = {
-	require("./providers/opencode"),
-	require("./providers/claude"),
-	require("./providers/codex"),
-	require("./providers/copilot"),
-	require("./providers/cursor"),
-	require("./providers/gemini"),
-	require("./providers/deepseek"),
-}
+-- Every *.luau file in providers/ or sources/ is an adapter. A broken or
+-- incomplete file is ignored, so users can add one without editing this file.
+local function load_adapters(dirname: string): { any }
+	local dir = tern.plugin.dir .. "/" .. dirname
+	local ok, names = pcall(tern.fs.list, dir)
+	if not ok or type(names) ~= "table" then
+		return {}
+	end
+	local out = {}
+	for _, name in ipairs(names) do
+		local base = name:match("^(.-)%.luau$")
+		if base and base ~= "util" then
+			local loaded, adapter = pcall(require, "./" .. dirname .. "/" .. base)
+			if loaded and type(adapter) == "table" and type(adapter.fetch) == "function" then
+				out[#out + 1] = adapter
+			end
+		end
+	end
+	return out
+end
 
--- Sources return several providers at once. Magpie already resolves its own
--- accounts and plugin providers, so its list is merged with the direct ones.
-local SOURCES = {
-	require("./providers/magpie"),
-}
+local PROVIDERS = load_adapters("providers")
+-- Sources return several providers at once; they are merged into the same list.
+local SOURCES = load_adapters("sources")
+-- Context adapters read each agent's own session log.
+local CONTEXTS = load_adapters("contexts")
 
 local STATE_SCHEMA = 2
 local TICK_MS = 5_000
@@ -396,11 +407,52 @@ local function refresh_all()
 	end
 end
 
+local context_running = false
+
+local function refresh_contexts()
+	if context_running then
+		return
+	end
+	context_running = true
+	local sessions = {}
+	local pending = #CONTEXTS
+	local function finish()
+		pending -= 1
+		if pending > 0 then
+			return
+		end
+		context_running = false
+		table.sort(sessions, function(a, b)
+			return tostring(a.at or "") > tostring(b.at or "")
+		end)
+		tern.kv.set("context_state", { updated = os.time(), sessions = sessions })
+	end
+	if pending == 0 then
+		context_running = false
+		tern.kv.set("context_state", { updated = os.time(), sessions = sessions })
+		return
+	end
+	for _, adapter in ipairs(CONTEXTS) do
+		local ok = pcall(adapter.fetch, function(items)
+			if type(items) == "table" then
+				for _, item in ipairs(items) do
+					sessions[#sessions + 1] = item
+				end
+			end
+			finish()
+		end)
+		if not ok then
+			finish()
+		end
+	end
+end
+
 local function check_request()
 	local request = tonumber(tern.kv.get("request")) or 0
 	if request > 0 then
 		tern.kv.set("request", 0)
 		refresh_all()
+		refresh_contexts()
 	end
 end
 
@@ -472,6 +524,11 @@ local function tick()
 		tern.kv.set("last_fetch", os.time())
 		refresh_all()
 	end
+	local context_last = tonumber(tern.kv.get("context_last")) or 0
+	if type(tern.kv.get("context_state")) ~= "table" or os.time() - context_last >= current.interval then
+		tern.kv.set("context_last", os.time())
+		refresh_contexts()
+	end
 	check_request()
 	tern.timer(TICK_MS, tick)
 end
@@ -482,6 +539,7 @@ end
 local block_pane: number? = nil
 local block_cx: any = nil
 local block_seen: number? = nil
+local context_seen: number? = nil
 
 local KIND = "quota.detail"
 local block_view_name = "main"
@@ -889,6 +947,123 @@ local function settings_view(state: any, settings_value: { [string]: any }): any
 	}) })
 end
 
+local function compact_tokens(value: number): string
+	if value >= 1_000_000 then
+		return string.format("%.1fM", value / 1_000_000)
+	elseif value >= 1_000 then
+		return string.format("%.0fK", value / 1_000)
+	end
+	return string.format("%.0f", value)
+end
+
+local function context_ago(iso: any): string
+	local target
+	if type(iso) == "number" then
+		target = iso > 1_000_000_000_000 and iso / 1000 or iso
+	elseif type(iso) == "string" then
+		local y, mo, d, h, mi, s = iso:match("^(%d+)-(%d+)-(%d+)T(%d+):(%d+):?(%d*)")
+		if not y then
+			return ""
+		end
+		local utc = os.date("!*t")
+		local now_utc = os.time({
+			year = utc.year, month = utc.month, day = utc.day,
+			hour = utc.hour, min = utc.min, sec = utc.sec,
+		})
+		local then_utc = os.time({
+			year = tonumber(y), month = tonumber(mo), day = tonumber(d),
+			hour = tonumber(h), min = tonumber(mi), sec = tonumber(s) or 0,
+		})
+		target = os.time() - (now_utc - then_utc)
+	else
+		return ""
+	end
+	local secs = math.max(0, os.time() - target)
+	if secs < 60 then
+		return "now"
+	elseif secs < 3600 then
+		return string.format("%dm", secs // 60)
+	elseif secs < 86400 then
+		return string.format("%dh", secs // 3600)
+	end
+	return string.format("%dd", secs // 86400)
+end
+
+local function context_view(): any
+	local l = lang()
+	local stored = tern.kv.get("context_state")
+	local sessions = type(stored) == "table" and stored.sessions or nil
+	if type(sessions) ~= "table" then
+		return tern.ui.col({ tern.ui.progress(nil, "Loading context…") })
+	end
+	local cards: { any } = {}
+	for _, session in ipairs(sessions) do
+		local used = tonumber(session.used) or 0
+		local window = tonumber(session.window)
+		local percent = window and window > 0 and math.max(0, math.min(100, used / window * 100)) or nil
+		local label = session.agent or "Agent"
+		if type(session.project) == "string" and session.project ~= "" then
+			label = label .. " · " .. session.project
+		end
+		local children: { any } = {
+			tern.ui.el("div", { class = "q-row" }, {
+				tern.ui.node("icon", { name = session.icon or "activity" }),
+				tern.ui.text({ tern.ui.span(label, "strong") }),
+				tern.ui.badge(session.model or i18n.t(l, "context_unknown_model"), "muted"),
+			}),
+		}
+		local values: { any } = {
+			tern.ui.node("text", {
+				spans = { tern.ui.span(i18n.t(l, "context"), "muted") },
+				basis = 0.20,
+				min = { w = 0 },
+			}),
+			tern.ui.node("text", {
+				spans = {
+					tern.ui.span(
+						window and (compact_tokens(used) .. " / " .. compact_tokens(window))
+							or (compact_tokens(used) .. " " .. i18n.t(l, "context_tokens")),
+						"num"
+					),
+				},
+				basis = 0.30,
+				min = { w = 0 },
+			}),
+		}
+		if percent then
+			values[#values + 1] = tern.ui.node("progress", {
+				value = percent / 100,
+				tone = percent >= 80 and "error" or (percent >= 60 and "warn" or nil),
+				grow = 1,
+			})
+			values[#values + 1] = tern.ui.node("text", {
+				spans = { tern.ui.span(string.format("%.0f%%", percent), "num") },
+				basis = 0.10,
+				min = { w = 0 },
+			})
+		end
+		values[#values + 1] = tern.ui.node("text", {
+			spans = { tern.ui.span(context_ago(session.at), "dim") },
+			basis = 0.12,
+			min = { w = 0 },
+		})
+		children[#children + 1] = tern.ui.el("div", { class = "q-row" }, values)
+		cards[#cards + 1] = tern.ui.el("div", { class = "q-card" }, children)
+	end
+	local body = {
+		tern.ui.text({ tern.ui.span(i18n.t(l, "context"), "strong") }),
+		tern.ui.text({ tern.ui.span(i18n.t(l, "context_hint"), "dim") }),
+	}
+	if #cards == 0 then
+		body[#body + 1] = tern.ui.text({ tern.ui.span(i18n.t(l, "context_empty"), "muted") })
+	else
+		for _, card in ipairs(cards) do
+			body[#body + 1] = card
+		end
+	end
+	return tern.ui.col({ tern.ui.node("col", { gap = "lg", role = "quota-page" }, body) })
+end
+
 local function block_view(_state: any): any
 	local state_value = tern.kv.get("state")
 	local settings_value = settings()
@@ -896,15 +1071,17 @@ local function block_view(_state: any): any
 	local dock = tern.ui.node("col", { gap = "none" }, {
 		tern.ui.node("row", { gap = "md" }, {
 			tab(i18n.t(l, "overview"), "gauge", "view=main", block_view_name == "main"),
+			tab(i18n.t(l, "context"), "activity", "view=context", block_view_name == "context"),
 			tab(i18n.t(l, "providers"), "sliders", "view=providers", block_view_name == "providers"),
 			tab(i18n.t(l, "settings"), "gear", "view=settings", block_view_name == "settings"),
 		}),
 	})
-	if type(state_value) ~= "table" then
-		return { main = tern.ui.col({ tern.ui.progress(nil, "Loading quota…") }), dock = dock }
-	end
 	local page
-	if block_view_name == "providers" then
+	if block_view_name == "context" then
+		page = context_view()
+	elseif type(state_value) ~= "table" then
+		page = tern.ui.col({ tern.ui.progress(nil, "Loading quota…") })
+	elseif block_view_name == "providers" then
 		page = providers_view(state_value, settings_value)
 	elseif block_view_name == "settings" then
 		page = settings_view(state_value, settings_value)
@@ -919,7 +1096,10 @@ tern.block.define("detail", {
 		block_pane = cx.pane
 		block_cx = cx
 		local nav = tern.kv.get("navigate")
-		block_view_name = nav == "providers" and "providers" or nav == "settings" and "settings" or "main"
+		block_view_name = (nav == "providers" and "providers")
+			or (nav == "settings" and "settings")
+			or (nav == "context" and "context")
+			or "main"
 		if nav ~= nil then
 			tern.kv.set("navigate", nil)
 		end
@@ -955,7 +1135,10 @@ tern.block.define("detail", {
 			tern.kv.set("settings", current)
 			cx:render()
 		elseif ev.act == "view" then
-			block_view_name = ev.value == "providers" and "providers" or ev.value == "settings" and "settings" or "main"
+			block_view_name = (ev.value == "providers" and "providers")
+				or (ev.value == "settings" and "settings")
+				or (ev.value == "context" and "context")
+				or "main"
 			cx:render()
 		elseif ev.act == "interval" then
 			current.interval = tonumber(ev.value) or 60
@@ -1037,7 +1220,10 @@ local function block_poll()
 			local nav = tern.kv.get("navigate")
 			if type(nav) == "string" then
 				tern.kv.set("navigate", nil)
-				block_view_name = nav == "providers" and "providers" or nav == "settings" and "settings" or "main"
+				block_view_name = (nav == "providers" and "providers")
+					or (nav == "settings" and "settings")
+					or (nav == "context" and "context")
+					or "main"
 			end
 			if block_cx and type(nav) == "string" then
 				block_cx:render()
@@ -1046,6 +1232,14 @@ local function block_poll()
 			local updated = type(stored) == "table" and stored.updated or 0
 			if updated ~= block_seen then
 				block_seen = updated
+				if block_cx then
+					block_cx:render()
+				end
+			end
+			local context_state = tern.kv.get("context_state")
+			local context_updated = type(context_state) == "table" and context_state.updated or 0
+			if context_updated ~= context_seen then
+				context_seen = context_updated
 				if block_cx then
 					block_cx:render()
 				end

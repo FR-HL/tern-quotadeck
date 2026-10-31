@@ -1,13 +1,8 @@
 Quota
 Copyright (c) 2026 FR-HL
 Source: https://github.com/FR-HL/tern-quota
-License: PolyForm Noncommercial License 1.0.0
+License: MIT
 
-Required Notice: Copyright (c) 2026 FR-HL (https://github.com/FR-HL/tern-quota)
-
-This project is source-available, not OSI-approved open source. Commercial
-use requires a separate written license from the copyright holder.
-
-If you redistribute this software or a modified version, keep this NOTICE,
-retain the Required Notice above, link back to the original repository, and
-clearly indicate the changes you made.
+This project is open source under the MIT License. You may use, copy, modify,
+merge, publish, distribute, sublicense, and sell copies, provided the
+copyright and permission notice in LICENSE are kept.

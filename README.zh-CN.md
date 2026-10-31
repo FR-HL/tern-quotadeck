@@ -11,6 +11,8 @@ Quota 只读取本机各 CLI 已经保存的登录信息，由 Tern 守护进程
 ## 功能
 
 - OpenCode Go、Claude、Codex、GitHub Copilot、Cursor、Gemini CLI、DeepSeek
+- **上下文**页直接读取 omp、Claude Code、Codex 的会话记录
+- 可插拔适配器：`providers/`、`sources/`、`contexts/` 下的每个 `.luau` 自动加载
 - Magpie 的服务商通过本地额度接口自动出现，包括 Open Design 和插件管理的账号
 - 一个自定义接口，自动识别 New API / One API 中转或 OpenAI 计费接口
 - 状态栏可配置：剩余/已用、窗口名称、重置倒计时、百分比、网速
@@ -95,6 +97,7 @@ DeepSeek 密钥和自定义接口都使用 Tern 原生输入框，支持正常�
 底部 dock 有三个标签：
 
 - **Overview**：只显示额度卡片，没有登录、Key 或配置。
+- **Context**：读取各 Agent 自己最新的会话记录：omp、Claude Code、Codex；显示已用/窗口、百分比和更新时间。
 - **Providers**：每个服务商只有一个状态图标：正常时是对勾，异常时同一个图标就是登录/密钥操作；之后是 **网格**（概览）和 **仪表**（状态栏）两个可见性开关，悬停显示文字，两者都不会退出登录。**Custom → 添加接口** 用 Tern 原生输入框依次询问名称、地址和 Key，然后自动识别额度协议。
 - **Settings**：刷新间隔（1/2/5 分钟）、语言（Auto、English、中文）、打开方式（默认 Floating，也可 Tab、Docked），以及状态栏格式。
 
@@ -113,14 +116,18 @@ DeepSeek 密钥和自定义接口都使用 Tern 原生输入框，支持正常�
 - Codex 和 Copilot 使用未公开接口，可能随时变化。
 - Claude 和 Gemini 使用已保存的 Token，Quota 不负责刷新；Token 过期时请重新运行对应 CLI。
 - Quota 是窗口插件：读取窗口所在机器的数据，不读取远程主机。
+- 上下文显示各 Agent 最新的一条会话，不一定对应某个 pane；并行会话时可能有歧义。
+- 上下文适配器目前覆盖 omp、Claude Code、Codex；其他 Agent 需要自己加适配器。窗口未知时仍显示已用 token，但不显示百分比。
 - 网速目前仅支持 Windows。
 
 ## 开发
 
-服务商是 `providers/` 下的普通 Luau 模块：
+服务商、数据源和上下文都是普通 Luau 模块。`providers/`、`sources/`、
+`contexts/` 下的每个 `.luau` 都会自动加载，不需要改列表。
 
 ```lua
 return {
+  api = 1,
   id = "example",
   name = "Example",
   short = "EX",              -- 状态栏显示名
@@ -128,24 +135,21 @@ return {
   windows = {
     { key = "hourly", label = "Hourly" },
   },
-  detect = function(): boolean end,          -- 可选：本地是否有登录
-  fetch = function(done)                     -- 必须且只能调用一次 done
-    -- 只读对应 CLI 的凭据文件，调用其用量接口
-    done({ status = "ok", windows = { hourly = { used = 12, resets_at = "..." } } })
-    -- 或：done({ status = "auth" }) / done({ status = "error", error = "..." })
+  fetch = function(done)     -- 必须且只能调用一次 done
+    done({ status = "ok", windows = { hourly = { used = 12 } } })
   end,
 }
 ```
 
-把它加入 `host.luau` 的 `PROVIDERS`。请求必须只读并限制频率，禁止写回凭据。
+上下文适配器读取各 Agent 自己的会话记录，返回
+`{ agent, project, model, used, window, at }`。完整接口、公开 JSON 格式和
+`models.json` 覆盖方式见 [`docs/adapters.md`](docs/adapters.md)。请求必须只读，禁止写回凭据。
 
 ## 许可与署名
 
-本项目是**源码可见（source-available）**，**不是 OSI 认可的开源许可**。使用 [PolyForm Noncommercial License 1.0.0](LICENSE)，**禁止商业用途**；商业使用需要版权持有人单独书面授权。
+本项目使用 [MIT License](LICENSE) 开源。
 
-- Required Notice：Copyright (c) 2026 FR-HL（https://github.com/FR-HL/tern-quota）
-- 分发时必须保留 `LICENSE` 和 `NOTICE`。
-- 分发修改版时，请保留原仓库链接，并明确标注你做了哪些修改。
+你可以使用、复制、修改、合并、发布、分发、再许可和销售，包括闭源和商业版本，只要保留 `LICENSE` 中的版权和许可声明。
 
 ## 致谢
 

@@ -14,6 +14,9 @@ hides the other providers.
 ## Features
 
 - OpenCode Go, Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and DeepSeek
+- **Context** tab reading omp, Claude Code and Codex session logs directly
+- Drop-in adapters: every `.luau` in `providers/`, `sources/` and `contexts/`
+  is loaded automatically
 - Magpie's providers appear automatically through its local quota API,
   including Open Design and plugin-managed accounts
 - One custom endpoint that detects New API / One API relays or OpenAI billing
@@ -116,6 +119,8 @@ remembered.
 The page has three tabs in the bottom dock:
 
 - **Overview** — quota cards only. No login, key or provider settings.
+- **Context** — each agent's latest session, read from its own log: omp,
+  Claude Code and Codex; shows used/window, percentage and age.
 - **Providers** — one icon-only status control per provider: a check when
   normal, otherwise the **Sign in** / **Key** action. Then **grid** controls
   the overview and **gauge** controls the status bar; each is labelled on
@@ -146,14 +151,22 @@ private to your user account, not as a secret vault.
   Re-run the provider CLI if a token expires.
 - Quota is a window plugin: it reads the machine the window runs on, not a
   remote host's.
+- Context shows each agent's latest session, not necessarily the session in a
+  particular pane; parallel sessions can make that ambiguous.
+- Context adapters currently cover omp, Claude Code and Codex. Other agents
+  need an adapter; a session without a known context window still shows used
+  tokens, without a percentage.
 - Network speed is currently Windows-only.
 
 ## Development
 
-Providers are plain Luau modules in `providers/`:
+Providers, sources and contexts are plain Luau modules. Every `.luau` file in
+`providers/`, `sources/` or `contexts/` is loaded automatically; there is no
+list to edit.
 
 ```lua
 return {
+  api = 1,
   id = "example",
   name = "Example",
   short = "EX",              -- used in the status line
@@ -161,29 +174,25 @@ return {
   windows = {
     { key = "hourly", label = "Hourly" },
   },
-  detect = function(): boolean end,          -- optional: is a login present?
-  fetch = function(done)                     -- call done exactly once
-    -- read only the CLI's own credential file, call its usage endpoint
-    done({ status = "ok", windows = { hourly = { used = 12, resets_at = "..." } } })
-    -- or: done({ status = "auth" }) / done({ status = "error", error = "..." })
+  fetch = function(done)     -- call done exactly once
+    done({ status = "ok", windows = { hourly = { used = 12 } } })
   end,
 }
 ```
 
-Add it to `PROVIDERS` in `host.luau`. Keep requests read-only and rate limited;
-never write a credential.
+Context adapters read their agent's own session log and return
+`{ agent, project, model, used, window, at }`. See
+[`docs/adapters.md`](docs/adapters.md) for the full contract, the public JSON
+shape and `models.json` overrides. Keep requests read-only and never write a
+credential.
 
 ## License and attribution
 
-This project is **source-available, not OSI-approved open source**. It uses the
-[PolyForm Noncommercial License 1.0.0](LICENSE); commercial use requires a
-separate written license from the copyright holder.
+This project is open source under the [MIT License](LICENSE).
 
-- Required Notice: Copyright (c) 2026 FR-HL
-  (https://github.com/FR-HL/tern-quota)
-- Keep `LICENSE` and `NOTICE` with any copy.
-- If you redistribute a modified version, link back to the original repository
-  and clearly state your changes.
+You may use, copy, modify, merge, publish, distribute, sublicense and sell
+copies, including closed-source and commercial versions, provided the
+copyright and permission notice in `LICENSE` are kept.
 
 ## Credits
 

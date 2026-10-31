@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0 — 2026-10-31
+
+- Relicensed under MIT.
+- Added a Context tab reading omp, Claude Code and Codex session logs directly;
+  no Magpie dependency.
+- Added drop-in adapter loading for providers/, sources/ and contexts/.
+- Added models.json overrides for context windows.
+
 ## 0.7.6 — 2026-10-31
 
 - Keep the status-line separator a separate white segment instead of

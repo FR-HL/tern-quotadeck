@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.7.6 · 2026-10-31
+Tern 0.9.8 · plugin 0.8.0 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 
@@ -19,6 +19,10 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
 - Custom: the single endpoint entry detected a New API relay (balance) and a
   mock OpenAI billing endpoint (25% included window) without asking which
   protocol to use; both appeared as status badges and refreshed automatically.
+- Context: omp, Claude Code and Codex were read from their own session logs,
+  without Magpie. The tab showed their latest session, model, used/window,
+  percentage and age; omp's numeric millisecond timestamp and Codex's direct
+  context window were handled.
 - Settings: refresh interval, language, open mode, remaining/used value, and
   window/countdown/percentage/network toggles all take effect immediately.
 - Status line: modules are separated with `|`; items inside one provider module
