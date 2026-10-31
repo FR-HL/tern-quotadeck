@@ -4,7 +4,7 @@
 local i18n = require("./i18n")
 
 local POLL_MS = 2_000
-local KIND = "quota.detail"
+local KIND = "quotadeck.detail"
 local WINDOW_LABEL = {
 	rolling = "5h",
 	five_hour = "5h",
@@ -157,7 +157,7 @@ local function segment(item: any): { [string]: any }?
 			text = table.concat(parts, " "),
 			icon = icon,
 			tone = left < 20 and "error" or nil,
-			command = "plugin.quota.detail",
+			command = "plugin.quotadeck.detail",
 		}
 	end
 	if status == "ok" and type(window) ~= "table" and type(item.balance) == "string" then
@@ -165,14 +165,14 @@ local function segment(item: any): { [string]: any }?
 			text = labelled(item.balance),
 			icon = icon,
 			tone = nil,
-			command = "plugin.quota.detail",
+			command = "plugin.quotadeck.detail",
 		}
 	end
 	if status == "auth" then
-		return { text = labelled(i18n.t(l, "auth")), icon = icon, tone = "error", command = "plugin.quota.detail" }
+		return { text = labelled(i18n.t(l, "auth")), icon = icon, tone = "error", command = "plugin.quotadeck.detail" }
 	end
 	if status == "error" then
-		return { text = labelled(i18n.t(l, "unavailable")), icon = icon, tone = "error", command = "plugin.quota.detail" }
+		return { text = labelled(i18n.t(l, "unavailable")), icon = icon, tone = "error", command = "plugin.quotadeck.detail" }
 	end
 	return nil
 end
@@ -256,12 +256,12 @@ local function rebuild()
 		push({
 			text = down_text,
 			tone = sf.net_down,
-			command = "plugin.quota.settings",
+			command = "plugin.quotadeck.settings",
 		})
 		out[#out + 1] = {
 			text = up_text,
 			tone = sf.net_up,
-			command = "plugin.quota.settings",
+			command = "plugin.quotadeck.settings",
 		}
 	end
 	segments = out

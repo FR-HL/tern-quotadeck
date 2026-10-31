@@ -1,12 +1,12 @@
 schema = 1
-id = "quota"
+id = "quotadeck"
 name = "QuotaDeck"
-version = "0.8.11"
+version = "0.9.0"
 description = "Remaining quota, reset countdowns and network speed for coding-agent plans in Tern."
 icon = "gauge"
 host = "host.luau"
 window = "window.luau"
-styles = ["styles/quota.css"]
+styles = ["styles/quotadeck.css"]
 
 [[blocks]]
 id = "detail"

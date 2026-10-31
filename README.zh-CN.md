@@ -27,13 +27,13 @@ QuotaDeck 只读取本机各 CLI 已经保存的登录信息，由 Tern 守护�
 从 GitHub 安装：
 
 ```sh
-tern plugin install github.com/FR-HL/tern-quota
+tern plugin install github.com/FR-HL/tern-quotadeck
 ```
 
 开发时直接链接本地目录：
 
 ```sh
-tern plugin link /path/to/tern-quota
+tern plugin link /path/to/tern-quotadeck
 tern plugin reload
 ```
 

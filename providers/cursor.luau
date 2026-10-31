@@ -38,7 +38,7 @@ local function post(path: string, access: string, done: (any?, string?, number?)
 			["Content-Type"] = "application/json",
 			["Connect-Protocol-Version"] = "1",
 			["Accept"] = "application/json",
-			["User-Agent"] = "tern-quota",
+			["User-Agent"] = "quotadeck",
 		},
 		body = "{}",
 		timeout_ms = 15_000,

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.0 — 2026-10-31
+
+- Full rename to QuotaDeck: plugin id `quotadeck`, block kind
+  `quotadeck.detail`, commands, styles, repository URL and local folder.
+- Migrate the old `quota` plugin data and settings into the new id.
+
 ## 0.8.11 — 2026-10-31
 
 - Rename the display name, block title, commands and documentation to

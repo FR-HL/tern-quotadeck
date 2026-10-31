@@ -36,13 +36,13 @@ hides the other providers.
 From GitHub:
 
 ```sh
-tern plugin install github.com/FR-HL/tern-quota
+tern plugin install github.com/FR-HL/tern-quotadeck
 ```
 
 Or link a checkout while developing:
 
 ```sh
-tern plugin link /path/to/tern-quota
+tern plugin link /path/to/tern-quotadeck
 tern plugin reload
 ```
 

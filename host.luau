@@ -189,7 +189,7 @@ local BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 local function headers_for(relay: any, browser_ua: boolean): { [string]: string }
 	local headers = {
 		["Accept"] = "application/json",
-		["User-Agent"] = browser_ua and BROWSER_UA or "tern-quota",
+		["User-Agent"] = browser_ua and BROWSER_UA or "quotadeck",
 	}
 	if type(relay.key) == "string" and relay.key ~= "" then
 		headers["Authorization"] = "Bearer " .. relay.key
@@ -556,7 +556,7 @@ local block_cx: any = nil
 local block_seen: number? = nil
 local context_seen: number? = nil
 
-local KIND = "quota.detail"
+local KIND = "quotadeck.detail"
 local block_view_name = "main"
 
 local function status_label(status: string): (string, string)
