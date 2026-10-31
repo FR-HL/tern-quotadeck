@@ -248,9 +248,14 @@ local function set_deepseek_key(cx)
 end
 
 local function add_relay(kind: string, cx)
-	local base_hint = kind == "newapi"
-		and "New API root (https://relay.example.com)"
-		or "OpenAI API root (https://api.example.com/v1)"
+	local base_hint
+	if kind == "newapi" then
+		base_hint = "New API root (https://relay.example.com)"
+	elseif kind == "openai" then
+		base_hint = "OpenAI API root (https://api.example.com/v1)"
+	else
+		base_hint = "Base URL (https://relay.example.com or https://host/v1)"
+	end
 	cx:prompt({ placeholder = "Name", icon = "globe" }):next(function(name, _err, cx1)
 		if type(name) ~= "string" or name == "" then
 			return
@@ -308,7 +313,7 @@ local function handle_ui_action(cx)
 	tern.kv.set("ui_action", nil)
 	if action:sub(1, 6) == "setup:" then
 		setup_provider(action:sub(7), cx)
-	elseif action == "add_relay=newapi" or action == "add_relay=openai" then
+	elseif action:match("^add_relay=%w+$") then
 		add_relay(action:match("^add_relay=(%w+)$"), cx)
 	end
 end

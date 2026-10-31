@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.7.0 · 2026-10-31
+Tern 0.9.8 · plugin 0.7.1 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 
@@ -8,14 +8,14 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
 
 - Overview: only signed-in quota cards; no login, key or configuration controls.
 - Providers: every provider keeps its own Sign in/Key button; Hide/Show changes
-  the overview and status line; DeepSeek Key and both Custom presets use Tern's
+  the overview and status line; DeepSeek Key and the Custom endpoint use Tern's
   native prompt and accept pasted text.
 - Magpie: Open Design and OpenCode Zen were discovered from
   `http://127.0.0.1:3425/v1/magpie/quotas` without manual configuration; the
   direct OpenCode Go card was not duplicated.
-- Custom: a New API relay returned its balance and a mock OpenAI billing
-  endpoint returned a 25% included window; both appeared as status badges and
-  refreshed automatically.
+- Custom: the single endpoint entry detected a New API relay (balance) and a
+  mock OpenAI billing endpoint (25% included window) without asking which
+  protocol to use; both appeared as status badges and refreshed automatically.
 - Settings: refresh interval, language, open mode, remaining/used value, and
   window/countdown/percentage/network toggles all take effect immediately.
 - Status line: modules are separated with `|`; items inside one provider module

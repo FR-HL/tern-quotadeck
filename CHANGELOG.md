@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1 — 2026-10-31
+
+- One custom endpoint entry, auto-detecting New API or OpenAI billing.
+- Keep provider icons visible in narrow floating cards.
+
 ## 0.7.0 — 2026-10-31
 
 - Auto-discover providers from Magpie's local quota API, including Open Design.

@@ -294,10 +294,6 @@
 	flex-wrap: nowrap;
 }
 
-.tn-pane.pip [data-surface='plugin.quota.detail'] .q-row .sf-icon {
-	display: none;
-}
-
 .tn-pane.pip [data-surface='plugin.quota.detail'] .q-row > .sf-text {
 	flex: 1 1 auto;
 	min-width: 0;

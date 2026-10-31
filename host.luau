@@ -274,14 +274,17 @@ local function fetch_openai_billing(relay: any, meta: any, base: string, done: (
 end
 
 local function fetch_relay(relay: any, index: number, done: (any) -> ())
-	local kind = relay.kind == "newapi" and "newapi" or "openai"
+	local kind = relay.kind
+	if kind ~= "newapi" and kind ~= "openai" then
+		kind = "auto"
+	end
 	local meta = {
 		id = "relay-" .. index,
 		name = type(relay.name) == "string" and relay.name ~= "" and relay.name or ("Relay " .. index),
 		short = type(relay.name) == "string" and relay.name ~= "" and relay.name or ("Relay " .. index),
 		icon = "globe",
 		source = "custom",
-		windows = kind == "newapi" and { { key = "quota", label = "Quota" } } or { { key = "included", label = "Included" } },
+		windows = { { key = "quota", label = "Quota" } },
 	}
 	local base = type(relay.base) == "string" and relay.base:gsub("/+$", "") or ""
 	if base == "" then
@@ -290,8 +293,20 @@ local function fetch_relay(relay: any, index: number, done: (any) -> ())
 	end
 	if kind == "newapi" then
 		fetch_newapi(relay, meta, base, done)
-	else
+	elseif kind == "openai" then
+		meta.windows = { { key = "included", label = "Included" } }
 		fetch_openai_billing(relay, meta, base, done)
+	else
+		-- One custom entry: try the relay's token endpoint first, then the
+		-- OpenAI billing endpoints. Auth errors mean the endpoint exists.
+		fetch_newapi(relay, meta, base, function(item)
+			if type(item) == "table" and (item.status == "ok" or item.status == "auth") then
+				done(item)
+				return
+			end
+			meta.windows = { { key = "included", label = "Included" } }
+			fetch_openai_billing(relay, meta, base, done)
+		end)
 	end
 end
 
@@ -627,7 +642,14 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 	for index, relay in ipairs(relays) do
 		local item = state.providers and state.providers["relay-" .. index]
 		local status, tone = status_label(type(item) == "table" and item.status or "error")
-		local kind_label = relay.kind == "newapi" and i18n.t(l, "new_api") or i18n.t(l, "openai_billing")
+		local kind_label
+		if relay.kind == "newapi" then
+			kind_label = i18n.t(l, "new_api")
+		elseif relay.kind == "openai" then
+			kind_label = i18n.t(l, "openai_billing")
+		else
+			kind_label = i18n.t(l, "auto")
+		end
 		local children: { any } = {
 			tern.ui.el("div", { class = "q-row q-status-row" }, {
 				tern.ui.node("icon", { name = "globe" }),
@@ -668,13 +690,8 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 		tern.ui.el("div", { class = "q-choices" }, {
 			tern.ui.el("button", {
 				class = "q-choice q-choice--primary",
-				text = i18n.t(l, "add_new_api"),
-				actions = { click = "add_relay=newapi" },
-			}),
-			tern.ui.el("button", {
-				class = "q-choice",
-				text = i18n.t(l, "add_openai_billing"),
-				actions = { click = "add_relay=openai" },
+				text = i18n.t(l, "add_custom"),
+				actions = { click = "add_relay=auto" },
 			}),
 		}),
 		tern.ui.node("col", { gap = "xs" }, custom_rows),
