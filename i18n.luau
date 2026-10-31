@@ -8,6 +8,11 @@ local strings = {
 		overview = "Overview",
 		custom = "Custom",
 		add = "Add",
+		custom_hint = "Auto-detected from Magpie and installed CLIs. Add an endpoint only for a relay.",
+		add_new_api = "New API relay",
+		add_openai_billing = "OpenAI billing",
+		auto = "Auto",
+		relay_added = "Endpoint added",
 
 
 
@@ -73,6 +78,11 @@ local strings = {
 		overview = "概览",
 		custom = "自定义",
 		add = "添加",
+		custom_hint = "自动读取 Magpie 和已安装 CLI；只有中转站才需要自定义。",
+		add_new_api = "New API 中转",
+		add_openai_billing = "OpenAI 账单",
+		auto = "自动",
+		relay_added = "接口已添加",
 
 
 

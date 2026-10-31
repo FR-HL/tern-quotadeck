@@ -247,12 +247,15 @@ local function set_deepseek_key(cx)
 	end)
 end
 
-local function add_relay(cx)
-	cx:prompt({ placeholder = "Relay name", icon = "globe" }):next(function(name, _err, cx1)
+local function add_relay(kind: string, cx)
+	local base_hint = kind == "newapi"
+		and "New API root (https://relay.example.com)"
+		or "OpenAI API root (https://api.example.com/v1)"
+	cx:prompt({ placeholder = "Name", icon = "globe" }):next(function(name, _err, cx1)
 		if type(name) ~= "string" or name == "" then
 			return
 		end
-		cx1:prompt({ placeholder = "Base URL (https://host/v1)", icon = "globe" }):next(function(base, _err2, cx2)
+		cx1:prompt({ placeholder = base_hint, icon = "globe" }):next(function(base, _err2, cx2)
 			if type(base) ~= "string" or base == "" then
 				return
 			end
@@ -267,11 +270,18 @@ local function add_relay(cx)
 				if type(settings.relays) ~= "table" then
 					settings.relays = {}
 				end
-				table.insert(settings.relays, { name = name, base = base, key = key })
+				table.insert(settings.relays, {
+					name = name,
+					base = base,
+					key = key,
+					kind = kind,
+				})
 				tern.kv.set("settings", settings)
 				tern.kv.set("request", 1)
 				if cx3 then
-					cx3:toast("success", "Endpoint added")
+					local current = tern.kv.get("settings")
+					local l = i18n.resolve(type(current) == "table" and current.lang or "auto")
+					cx3:toast("success", i18n.t(l, "relay_added"), name)
 				end
 			end)
 		end)
@@ -298,8 +308,8 @@ local function handle_ui_action(cx)
 	tern.kv.set("ui_action", nil)
 	if action:sub(1, 6) == "setup:" then
 		setup_provider(action:sub(7), cx)
-	elseif action == "add_relay" then
-		add_relay(cx)
+	elseif action == "add_relay=newapi" or action == "add_relay=openai" then
+		add_relay(action:match("^add_relay=(%w+)$"), cx)
 	end
 end
 

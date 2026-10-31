@@ -15,7 +15,19 @@ local PROVIDERS = {
 	require("./providers/deepseek"),
 }
 
+-- Sources return several providers at once. Magpie already resolves its own
+-- accounts and plugin providers, so its list is merged with the direct ones.
+local SOURCES = {
+	require("./providers/magpie"),
+}
+
+local STATE_SCHEMA = 2
 local TICK_MS = 5_000
+
+-- Magpie's provider ids that a direct adapter already covers.
+local ID_ALIASES = {
+	["opencode-go"] = "opencode",
+}
 
 local function settings(): { [string]: any }
 	local stored = tern.kv.get("settings")
@@ -79,6 +91,7 @@ local function provider_state(provider: any): { [string]: any }
 		name = provider.name,
 		short = provider.short or provider.name,
 		icon = provider.icon,
+		source = provider.source,
 		windows = provider.windows,
 	}
 end
@@ -116,11 +129,11 @@ local function publish(state: { [string]: any })
 		history = {}
 	end
 	local point = { t = os.time() }
-	for _, provider in ipairs(PROVIDERS) do
-		local item = state.providers[provider.id]
+	for _, id in ipairs(state.order or {}) do
+		local item = state.providers[id]
 		local first = item and item.windows and item.windows[1]
 		if type(first) == "table" and type(first.used) == "number" then
-			point[provider.id] = util.remaining(first.used)
+			point[id] = util.remaining(first.used)
 		end
 	end
 	history[#history + 1] = point
@@ -128,6 +141,7 @@ local function publish(state: { [string]: any })
 		table.remove(history, 1)
 	end
 	state.history = history
+	state.schema = STATE_SCHEMA
 	state.updated = os.time()
 	tern.kv.set("state", state)
 end
@@ -147,10 +161,12 @@ local function fetch_provider(provider: any, done: (any) -> ())
 	end)
 end
 
-local function headers_for(relay: any): { [string]: string }
+local BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+
+local function headers_for(relay: any, browser_ua: boolean): { [string]: string }
 	local headers = {
 		["Accept"] = "application/json",
-		["User-Agent"] = "tern-quota",
+		["User-Agent"] = browser_ua and BROWSER_UA or "tern-quota",
 	}
 	if type(relay.key) == "string" and relay.key ~= "" then
 		headers["Authorization"] = "Bearer " .. relay.key
@@ -158,24 +174,74 @@ local function headers_for(relay: any): { [string]: string }
 	return headers
 end
 
-local function fetch_relay(relay: any, index: number, done: (any) -> ())
-	local meta = {
-		id = "relay-" .. index,
-		name = type(relay.name) == "string" and relay.name ~= "" and relay.name or ("Relay " .. index),
-		short = type(relay.name) == "string" and relay.name ~= "" and relay.name or ("Relay " .. index),
-		icon = "globe",
-		windows = { { key = "included", label = "Included" } },
-	}
-	local base = type(relay.base) == "string" and relay.base:gsub("/+$", "") or ""
-	if base == "" then
-		done(item_from(meta, { status = "error", error = "missing base URL" }))
-		return
+local function grouped(value: number): string
+	local text = string.format("%.0f", value)
+	local result = text:reverse():gsub("(%d%d%d)", "%1,"):reverse()
+	if result:sub(1, 1) == "," then
+		result = result:sub(2)
 	end
+	return result
+end
+
+local function relay_status(status: number?): string
+	return (status == 401 or status == 403) and "auth" or "error"
+end
+
+local function fetch_newapi(relay: any, meta: any, base: string, done: (any) -> ())
+	-- New API exposes the token balance under the relay root, not under /v1.
+	local root = base:gsub("/+$", ""):gsub("/v1$", "")
+	local url = root .. "/api/usage/token/"
+	util.fetch_json(url, { headers = headers_for(relay, true), timeout_ms = 15_000 }, function(value, err, status)
+		if err then
+			done(item_from(meta, { status = relay_status(status), error = err }))
+			return
+		end
+		local data = type(value) == "table" and value.data or nil
+		local valid = type(value) == "table" and (value.code == true or value.code == 0)
+		if not valid or type(data) ~= "table" then
+			local message = type(value) == "table" and value.message or "invalid response"
+			done(item_from(meta, { status = relay_status(status), error = tostring(message) }))
+			return
+		end
+		local available = tonumber(data.account_total_available)
+			or tonumber(data.total_available)
+			or tonumber(type(data.user_quota) == "table" and data.user_quota.total_available)
+		local used = tonumber(data.account_total_used)
+			or tonumber(data.total_used)
+			or tonumber(type(data.user_quota) == "table" and data.user_quota.total_used)
+		local granted = tonumber(data.account_total_granted)
+			or tonumber(data.total_granted)
+		if used == nil then
+			done(item_from(meta, { status = "error", error = "no usage total" }))
+			return
+		end
+		if data.unlimited_quota == true or (granted ~= nil and granted <= 0) then
+			done(item_from(meta, {
+				status = "ok",
+				balance = "Unlimited · " .. grouped(used) .. " used",
+			}))
+			return
+		end
+		if granted == nil or granted <= 0 then
+			done(item_from(meta, { status = "error", error = "no quota total" }))
+			return
+		end
+		local percent = math.max(0, math.min(100, used / granted * 100))
+		local balance = available ~= nil and (grouped(available) .. " left") or nil
+		done(item_from(meta, {
+			status = "ok",
+			windows = { quota = { used = percent } },
+			balance = balance,
+		}))
+	end)
+end
+
+local function fetch_openai_billing(relay: any, meta: any, base: string, done: (any) -> ())
 	local root = base:match("/v1$") and base or (base .. "/v1")
-	local headers = headers_for(relay)
+	local headers = headers_for(relay, false)
 	util.fetch_json(root .. "/dashboard/billing/subscription", { headers = headers, timeout_ms = 15_000 }, function(subscription, sub_err, sub_status)
 		if sub_err then
-			done(item_from(meta, { status = (sub_status == 401 or sub_status == 403) and "auth" or "error", error = sub_err }))
+			done(item_from(meta, { status = relay_status(sub_status), error = sub_err }))
 			return
 		end
 		local limit = tonumber(subscription and subscription.hard_limit_usd)
@@ -193,7 +259,7 @@ local function fetch_relay(relay: any, index: number, done: (any) -> ())
 		)
 		util.fetch_json(usage_url, { headers = headers, timeout_ms = 15_000 }, function(usage, usage_err, usage_status)
 			if usage_err then
-				done(item_from(meta, { status = (usage_status == 401 or usage_status == 403) and "auth" or "error", error = usage_err }))
+				done(item_from(meta, { status = relay_status(usage_status), error = usage_err }))
 				return
 			end
 			local cents = tonumber(usage and usage.total_usage)
@@ -207,7 +273,56 @@ local function fetch_relay(relay: any, index: number, done: (any) -> ())
 	end)
 end
 
+local function fetch_relay(relay: any, index: number, done: (any) -> ())
+	local kind = relay.kind == "newapi" and "newapi" or "openai"
+	local meta = {
+		id = "relay-" .. index,
+		name = type(relay.name) == "string" and relay.name ~= "" and relay.name or ("Relay " .. index),
+		short = type(relay.name) == "string" and relay.name ~= "" and relay.name or ("Relay " .. index),
+		icon = "globe",
+		source = "custom",
+		windows = kind == "newapi" and { { key = "quota", label = "Quota" } } or { { key = "included", label = "Included" } },
+	}
+	local base = type(relay.base) == "string" and relay.base:gsub("/+$", "") or ""
+	if base == "" then
+		done(item_from(meta, { status = "error", error = "missing base URL" }))
+		return
+	end
+	if kind == "newapi" then
+		fetch_newapi(relay, meta, base, done)
+	else
+		fetch_openai_billing(relay, meta, base, done)
+	end
+end
+
 local running = false
+
+local function merge_item(state: any, priorities: any, item: any, priority: number)
+	if type(item) ~= "table" or type(item.id) ~= "string" or item.id == "" then
+		return
+	end
+	local id = ID_ALIASES[item.id] or item.id
+	item.id = id
+	local existing = state.providers[id]
+	local rank = priorities[id] or 0
+	local replace = false
+	if not existing then
+		replace = true
+	elseif item.status == "ok" and existing.status ~= "ok" then
+		replace = true
+	elseif item.status == existing.status and priority > rank then
+		replace = true
+	elseif item.status ~= "ok" and existing.status ~= "ok" and priority > rank then
+		replace = true
+	end
+	if replace then
+		if not existing then
+			state.order[#state.order + 1] = id
+		end
+		state.providers[id] = item
+		priorities[id] = priority
+	end
+end
 
 local function refresh_all()
 	if running then
@@ -219,11 +334,12 @@ local function refresh_all()
 		order = {},
 		updated = 0,
 	}
+	local priorities = {}
 	local relays = settings().relays
 	if type(relays) ~= "table" then
 		relays = {}
 	end
-	local pending = #PROVIDERS + #relays
+	local pending = #PROVIDERS + #relays + #SOURCES
 	local function done()
 		pending -= 1
 		if pending > 0 then
@@ -233,19 +349,29 @@ local function refresh_all()
 		publish(state)
 	end
 	for _, provider in ipairs(PROVIDERS) do
-		state.order[#state.order + 1] = provider.id
 		fetch_provider(provider, function(item)
-			state.providers[provider.id] = item
+			merge_item(state, priorities, item, 2)
 			done()
 		end)
 	end
 	for index, relay in ipairs(relays) do
-		local id = "relay-" .. index
-		state.order[#state.order + 1] = id
 		fetch_relay(relay, index, function(item)
-			state.providers[id] = item
+			merge_item(state, priorities, item, 3)
 			done()
 		end)
+	end
+	for _, source in ipairs(SOURCES) do
+		local ok = pcall(source.fetch, function(items)
+			if type(items) == "table" then
+				for _, item in ipairs(items) do
+					merge_item(state, priorities, item, 1)
+				end
+			end
+			done()
+		end)
+		if not ok then
+			done()
+		end
 	end
 end
 
@@ -260,6 +386,9 @@ end
 local function state_is_stale(): boolean
 	local stored = tern.kv.get("state")
 	if type(stored) ~= "table" or type(stored.providers) ~= "table" then
+		return true
+	end
+	if stored.schema ~= STATE_SCHEMA then
 		return true
 	end
 	for _, provider in ipairs(PROVIDERS) do
@@ -419,6 +548,9 @@ local function provider_card(item: any, collapsed: boolean): any
 	local children = { header }
 	if not collapsed then
 		children[#children + 1] = provider_windows(item)
+		if type(item.balance) == "string" and item.balance ~= "" then
+			children[#children + 1] = tern.ui.text({ tern.ui.span(item.balance, "dim") })
+		end
 		if item.status ~= "ok" and item.error then
 			children[#children + 1] = tern.ui.text({ tern.ui.span(item.error, "dim") })
 		end
@@ -457,26 +589,28 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 			local hidden = settings_value.hidden[id] == true
 			local label, tone = status_label(item.status)
 			local actions: { any } = {}
-			local setup_text
-			if id == "deepseek" then
-				setup_text = i18n.t(l, "set_key")
-			else
-				setup_text = i18n.t(l, "sign_in")
+			local auto = item.source == "magpie"
+			if not auto then
+				local setup_text = id == "deepseek" and i18n.t(l, "set_key") or i18n.t(l, "sign_in")
+				actions[#actions + 1] = tern.ui.el("button", {
+					class = "q-choice q-choice--primary",
+					text = setup_text,
+					actions = { click = "setup=" .. id },
+				})
 			end
-			actions[#actions + 1] = tern.ui.el("button", {
-				class = "q-choice q-choice--primary",
-				text = setup_text,
-				actions = { click = "setup=" .. id },
-			})
 			actions[#actions + 1] = tern.ui.el("button", {
 				class = "q-choice q-choice--quiet",
 				text = i18n.t(l, hidden and "show" or "hide"),
 				actions = { click = (hidden and "show=" or "hide=") .. id },
 			})
+			local name_spans = { tern.ui.span(item.name or id, "strong") }
+			if auto then
+				name_spans[#name_spans + 1] = tern.ui.span("  " .. i18n.t(l, "auto"), "dim")
+			end
 			rows[#rows + 1] = tern.ui.el("div", { class = "q-row" }, {
 				tern.ui.node("icon", { name = item.icon or "puzzle" }),
 				tern.ui.node("text", {
-					spans = { tern.ui.span(item.name or id, "strong") },
+					spans = name_spans,
 					basis = 0.30,
 					min = { w = 0 },
 				}),
@@ -491,24 +625,35 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 	end
 	local custom_rows: { any } = {}
 	for index, relay in ipairs(relays) do
-		custom_rows[#custom_rows + 1] = tern.ui.el("div", { class = "q-row q-status-row" }, {
-			tern.ui.node("icon", { name = "globe" }),
-			tern.ui.node("text", {
-				spans = { tern.ui.span(relay.name or ("Relay " .. index), "strong") },
-				basis = 0.30,
-				min = { w = 0 },
+		local item = state.providers and state.providers["relay-" .. index]
+		local status, tone = status_label(type(item) == "table" and item.status or "error")
+		local kind_label = relay.kind == "newapi" and i18n.t(l, "new_api") or i18n.t(l, "openai_billing")
+		local children: { any } = {
+			tern.ui.el("div", { class = "q-row q-status-row" }, {
+				tern.ui.node("icon", { name = "globe" }),
+				tern.ui.node("text", {
+					spans = { tern.ui.span(relay.name or ("Relay " .. index), "strong") },
+					basis = 0.24,
+					min = { w = 0 },
+				}),
+				tern.ui.badge(kind_label, "muted"),
+				tern.ui.node("text", {
+					spans = { tern.ui.span(relay.base or "", "dim") },
+					grow = 1,
+					min = { w = 0 },
+				}),
+				tern.ui.badge(status, tone),
+				tern.ui.el("button", {
+					class = "q-choice q-choice--quiet",
+					text = i18n.t(l, "remove"),
+					actions = { click = "remove_relay=" .. index },
+				}),
 			}),
-			tern.ui.node("text", {
-				spans = { tern.ui.span(relay.base or "", "dim") },
-				grow = 1,
-				min = { w = 0 },
-			}),
-			tern.ui.el("button", {
-				class = "q-choice q-choice--quiet",
-				text = i18n.t(l, "remove"),
-				actions = { click = "remove_relay=" .. index },
-			}),
-		})
+		}
+		if type(item) == "table" and item.status ~= "ok" and item.error then
+			children[#children + 1] = tern.ui.text({ tern.ui.span(item.error, "dim") })
+		end
+		custom_rows[#custom_rows + 1] = tern.ui.node("col", { gap = "xs" }, children)
 	end
 	if #custom_rows == 0 then
 		custom_rows[1] = tern.ui.text({ tern.ui.span(i18n.t(l, "no_relays"), "dim") })
@@ -518,12 +663,18 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 		tern.ui.text({ tern.ui.span(i18n.t(l, "hide_hint"), "dim") }),
 		tern.ui.node("col", { gap = "xs" }, rows),
 		tern.ui.rule(""),
-		tern.ui.el("div", { class = "q-row" }, {
-			tern.ui.text({ tern.ui.span(i18n.t(l, "custom"), "strong") }),
+		tern.ui.text({ tern.ui.span(i18n.t(l, "custom"), "strong") }),
+		tern.ui.text({ tern.ui.span(i18n.t(l, "custom_hint"), "dim") }),
+		tern.ui.el("div", { class = "q-choices" }, {
 			tern.ui.el("button", {
 				class = "q-choice q-choice--primary",
-				text = i18n.t(l, "add"),
-				actions = { click = "add_relay" },
+				text = i18n.t(l, "add_new_api"),
+				actions = { click = "add_relay=newapi" },
+			}),
+			tern.ui.el("button", {
+				class = "q-choice",
+				text = i18n.t(l, "add_openai_billing"),
+				actions = { click = "add_relay=openai" },
 			}),
 		}),
 		tern.ui.node("col", { gap = "xs" }, custom_rows),
@@ -694,8 +845,8 @@ tern.block.define("detail", {
 		end
 		return { seen = 0 }
 	end,
-	view = function(_state: any, _cx: any): any
-		return block_view(_state)
+	view = function(state: any, _cx: any): any
+		return block_view(state)
 	end,
 	title = function(_state: any): string?
 		return "Quota"
@@ -746,7 +897,7 @@ tern.block.define("detail", {
 		elseif ev.act == "setup" then
 			tern.kv.set("ui_action", "setup:" .. ev.value)
 		elseif ev.act == "add_relay" then
-			tern.kv.set("ui_action", "add_relay")
+			tern.kv.set("ui_action", "add_relay=" .. (ev.value == "newapi" and "newapi" or "openai"))
 		elseif ev.act == "remove_relay" then
 			local index = tonumber(ev.value)
 			if index and current.relays and current.relays[index] then

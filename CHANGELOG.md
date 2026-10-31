@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 — 2026-10-31
+
+- Auto-discover providers from Magpie's local quota API, including Open Design.
+- Merge Magpie entries with direct providers without duplicate cards.
+- Add a New API / One API relay preset and keep OpenAI billing as a preset.
+- Use Tern's native prompt for custom fields; clipboard paste and selection work.
+
 ## 0.6.2 — 2026-10-31
 
 - Removed the download icon and the middle dot from the quota module.

@@ -11,7 +11,8 @@ Quota 只读取本机各 CLI 已经保存的登录信息，由 Tern 守护进程
 ## 功能
 
 - OpenCode Go、Claude、Codex、GitHub Copilot、Cursor、Gemini CLI、DeepSeek
-- 自定义 OpenAI 兼容计费接口
+- Magpie 的服务商通过本地额度接口自动出现，包括 Open Design 和插件管理的账号
+- 自定义 New API / One API 中转，以及 OpenAI 兼容计费接口
 - 状态栏可配置：剩余/已用、窗口名称、重置倒计时、百分比、网速
 - 服务商支持时显示 5 小时、每周、每月窗口
 - 原生概览、服务商、设置页，不另开网页面板
@@ -72,9 +73,11 @@ OC 4h32m 96%
 | Cursor | `Cursor/auth.json` | Included 和 API 用量 |
 | Gemini CLI | `~/.gemini/oauth_creds.json` | Code Assist 额度；只读，不刷新 Token |
 | DeepSeek | 服务商页 **密钥**、`DEEPSEEK_API_KEY`，或 **Quota: Set DeepSeek API key** | 账户余额（`¥`/`$`），没有百分比窗口 |
-| 自定义接口 | 服务商页 **Custom → Add** | OpenAI 兼容的 `dashboard/billing/subscription` + `usage` |
+| Magpie | `http://127.0.0.1:3425/v1/magpie/quotas` | 自动发现；包含 Open Design 和 Magpie 管理的插件服务商 |
+| 自定义 New API 中转 | 服务商页 **Custom → New API 中转** | 读取 New API / One API 的 `/api/usage/token/` |
+| 自定义 OpenAI 账单 | 服务商页 **Custom → OpenAI 账单** | 读取 `dashboard/billing/subscription` + `usage` |
 
-DeepSeek 密钥和自定义接口使用 Tern 原生输入框，支持正常粘贴。概览只显示已登录且有额度可画的服务商；所有服务商都会出现在 **Providers** 页，并各自带 **Sign in** 或 **Key** 按钮。
+DeepSeek 密钥和两种自定义接口都使用 Tern 原生输入框，支持正常粘贴。概览只显示已登录且有额度可画的服务商；所有服务商都会出现在 **Providers** 页，并各自带 **Sign in** 或 **Key** 按钮。Magpie 项是只读的，并标记为 **自动**。
 
 ## 命令
 
@@ -93,7 +96,7 @@ DeepSeek 密钥和自定义接口使用 Tern 原生输入框，支持正常粘�
 底部 dock 有三个标签：
 
 - **Overview**：只显示额度卡片，没有登录、Key 或配置。
-- **Providers**：每个服务商都有 **Sign in** / **Key** 按钮，以及 **Hide/Show**。隐藏只影响概览和状态栏，不会退出登录。**Custom → Add** 依次询问名称、地址和 Key。
+- **Providers**：每个服务商都有 **Sign in** / **Key** 按钮，以及 **Hide/Show**。隐藏只影响概览和状态栏，不会退出登录。**Custom → New API 中转 / OpenAI 账单** 用 Tern 原生输入框依次询问名称、地址和 Key。
 - **Settings**：刷新间隔（1/2/5 分钟）、语言（Auto、English、中文）、打开方式（默认 Floating，也可 Tab、Docked），以及状态栏格式。
 
 设置保存在插件自己的 `kv`，不写入 Tern 首选项。DeepSeek Key 和自定义接口 Key 也存在这里；请把这个目录当作私人数据，而不是系统密钥库。

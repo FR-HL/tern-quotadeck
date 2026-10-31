@@ -14,7 +14,9 @@ hides the other providers.
 ## Features
 
 - OpenCode Go, Claude, Codex, GitHub Copilot, Cursor, Gemini CLI and DeepSeek
-- Custom OpenAI-compatible billing endpoints
+- Magpie's providers appear automatically through its local quota API,
+  including Open Design and plugin-managed accounts
+- Custom New API / One API relays and OpenAI-compatible billing endpoints
 - Status line with configurable remaining/used value, window label, reset
   countdown, percentage and network speed
 - Five-hour, weekly and monthly windows where the provider exposes them
@@ -82,12 +84,15 @@ Tern runs.
 | Cursor | `Cursor/auth.json` | Included and API usage |
 | Gemini CLI | `~/.gemini/oauth_creds.json` | Code Assist quota; read-only, no token refresh |
 | DeepSeek | Providers → **Key**, `DEEPSEEK_API_KEY`, or **Quota: Set DeepSeek API key** | Account balance (`¥`/`$`), no percentage windows |
-| Custom endpoint | Providers → **Custom → Add** | OpenAI-compatible `dashboard/billing/subscription` + `usage` |
+| Magpie | `http://127.0.0.1:3425/v1/magpie/quotas` | Auto-detected; includes Open Design and plugin providers Magpie tracks |
+| Custom New API relay | Providers → **Custom → New API relay** | Reads `/api/usage/token/` from New API / One API relays |
+| Custom OpenAI billing | Providers → **Custom → OpenAI billing** | Reads `dashboard/billing/subscription` + `usage` |
 
-DeepSeek keys and custom endpoints use Tern's native prompt fields, so normal
+DeepSeek keys and both custom presets use Tern's native prompt field, so normal
 clipboard paste works. The overview shows only providers that are signed in
 and have quota to draw; every provider is listed on **Providers** with its own
-**Sign in** or **Key** button.
+**Sign in** or **Key** button. Magpie entries are read-only and marked
+**Auto**.
 
 ## Commands
 
@@ -111,7 +116,8 @@ The page has three tabs in the bottom dock:
 - **Overview** — quota cards only. No login, key or provider settings.
 - **Providers** — every provider with its own **Sign in** / **Key** button,
   plus **Hide/Show**. Hiding removes it from the overview and status bar; it
-  does not sign you out. **Custom → Add** asks for name, base URL and key.
+  does not sign you out. **Custom → New API relay / OpenAI billing** asks for
+  the name, base URL and key with Tern's native prompt.
 - **Settings** — refresh interval (1, 2 or 5 minutes), language (Auto,
   English, 中文), how the page opens (Floating by default; Tab, Docked), and
   the status-line format.
