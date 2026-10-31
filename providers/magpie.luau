@@ -56,7 +56,10 @@ function source.fetch(done: (any) -> ())
 		timeout_ms = 4_000,
 	}, function(value, err)
 		if err or type(value) ~= "table" or type(value.data) ~= "table" then
-			done({})
+			-- Keep the last good list across a Magpie restart or a brief
+			-- gateway hiccup, so a reload doesn't drop its cards.
+			local cached = tern.kv.get("magpie_cache")
+			done(type(cached) == "table" and cached or {})
 			return
 		end
 		local items = {}
@@ -65,6 +68,9 @@ function source.fetch(done: (any) -> ())
 			if item then
 				items[#items + 1] = item
 			end
+		end
+		if #items > 0 then
+			tern.kv.set("magpie_cache", items)
 		end
 		done(items)
 	end)

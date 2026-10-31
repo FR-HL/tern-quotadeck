@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.7.1 · 2026-10-31
+Tern 0.9.8 · plugin 0.7.2 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 

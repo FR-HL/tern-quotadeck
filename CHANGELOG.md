@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.2 — 2026-10-31
+
+- Keep the last Magpie provider list across plugin reloads and gateway restarts.
+
 ## 0.7.1 — 2026-10-31
 
 - One custom endpoint entry, auto-detecting New API or OpenAI billing.
