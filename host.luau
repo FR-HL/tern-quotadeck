@@ -730,6 +730,16 @@ local function context_provider(session: any): string?
 	return type(provider) == "string" and provider or nil
 end
 
+local function context_icon(session: any): string
+	local provider = context_provider(session)
+	local state = tern.kv.get("state")
+	local item = provider and type(state) == "table" and state.providers and state.providers[provider] or nil
+	if type(item) == "table" and type(item.icon) == "string" then
+		return item.icon
+	end
+	return type(session) == "table" and session.icon or "activity"
+end
+
 local function filter_entries(state: any, settings_value: { [string]: any }): { any }
 	local out, seen = {}, {}
 	local function add(id: any, name: any, icon: any)
@@ -1137,7 +1147,7 @@ context_section = function(selected: string?): any?
 		end
 		local children: { any } = {
 			tern.ui.el("div", { class = "q-row" }, {
-				tern.ui.node("icon", { name = session.icon or "activity" }),
+				tern.ui.node("icon", { name = context_icon(session) }),
 				tern.ui.text({ tern.ui.span(label, "strong") }),
 				tern.ui.badge(model_label(session.model) or i18n.t(l, "context_unknown_model"), "muted"),
 			}),

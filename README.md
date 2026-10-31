@@ -132,7 +132,8 @@ The page has three tabs in the bottom dock:
 
 - **Overview** — a provider icon strip filters the page; quota cards follow,
   then a **Context** section with up to eight recent sessions per agent from
-  its own log (omp, Claude Code and Codex): bare model name, used/window, percentage and age.
+  its own log (omp, Claude Code and Codex): the provider icon, bare model
+  name, used/window, percentage and age.
   No login, key or provider settings.
 - **Providers** — one icon-only status control per provider: a check when
   normal, otherwise the **Sign in** / **Key** action. Then **grid** controls

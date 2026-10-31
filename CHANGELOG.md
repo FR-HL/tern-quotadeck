@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.7 — 2026-10-31
+
+- Use the provider icon in Context cards, matching the quota card, instead
+  of the agent app icon.
+
 ## 0.8.6 — 2026-10-31
 
 - Show only the bare model name in Context cards; provider prefixes and
