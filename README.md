@@ -71,6 +71,7 @@ Settings → **Status line** lets you choose:
 - value: remaining or used
 - names: short codes (default, `OC`, `OD`, `CX`), full provider names, or hidden
 - icon: show or hide the provider icon in each status segment
+- balance label: off by default; when on, wallet balances append `Left`
 - show window label, reset countdown, percentage and network speed; the speed module has separate download/upload colors
 
 Window labels are normalized to `5h`, `7d` and `mo` for every source, so

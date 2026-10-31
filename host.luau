@@ -82,6 +82,9 @@ local function settings(): { [string]: any }
 	if type(sf.icon) ~= "boolean" then
 		sf.icon = true
 	end
+	if type(sf.balance_suffix) ~= "boolean" then
+		sf.balance_suffix = false
+	end
 	if type(sf.window) ~= "boolean" then
 		sf.window = true
 	end
@@ -1033,6 +1036,7 @@ local function settings_view(state: any, settings_value: { [string]: any }): any
 		{ "reset", i18n.t(l, "reset") },
 		{ "percent", i18n.t(l, "percent") },
 		{ "icon", i18n.t(l, "icon") },
+		{ "balance_suffix", i18n.t(l, "balance_suffix") },
 		{ "net", i18n.t(l, "speed") },
 	}) do
 		local key, label = option[1], option[2]
@@ -1429,7 +1433,7 @@ tern.block.define("detail", {
 			cx:render()
 		elseif ev.act == "status_toggle" then
 			local key = ev.value
-			if key == "window" or key == "reset" or key == "percent" or key == "net" or key == "icon" then
+			if key == "window" or key == "reset" or key == "percent" or key == "net" or key == "icon" or key == "balance_suffix" then
 				current.status_format[key] = not current.status_format[key]
 				tern.kv.set("settings", current)
 				cx:render()

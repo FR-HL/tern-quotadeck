@@ -91,6 +91,7 @@ local function status_format(settings: any): { [string]: any }
 		mode = sf.mode == "used" and "used" or "remaining",
 		names = sf.names == "full" and "full" or (sf.names == "none" and "none" or "short"),
 		icon = sf.icon ~= false,
+		balance_suffix = sf.balance_suffix == true,
 		window = sf.window ~= false,
 		reset = sf.reset ~= false,
 		percent = sf.percent ~= false,
@@ -161,8 +162,10 @@ local function segment(item: any): { [string]: any }?
 		}
 	end
 	if status == "ok" and type(window) ~= "table" and type(item.balance) == "string" then
-		local balance_text = item.balance_left and (item.balance_left .. " " .. i18n.t(l, "remaining"))
-			or (item.status_balance or item.balance)
+		local balance_text = item.balance_left or item.status_balance or item.balance
+		if sf.balance_suffix and item.balance_left then
+			balance_text = balance_text .. " " .. i18n.t(l, "remaining")
+		end
 		return {
 			text = labelled(balance_text),
 			icon = icon,
@@ -210,6 +213,7 @@ local function format_signature(settings: any): string
 		sf.mode,
 		sf.names,
 		tostring(sf.icon),
+		tostring(sf.balance_suffix),
 		tostring(sf.window),
 		tostring(sf.reset),
 		tostring(sf.percent),

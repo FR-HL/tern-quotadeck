@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.5 — 2026-10-31
+
+- Status-line wallet balances show only the amount by default; the optional
+  Balance label toggle appends `剩余` / `Left`.
+
 ## 0.9.4 — 2026-10-31
 
 - Label relay money in the interface language: `剩余 $… · 已用 $…` in Chinese,
