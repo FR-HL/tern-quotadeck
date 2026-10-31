@@ -143,6 +143,7 @@ local function item_from(meta: { [string]: any }, result: any): { [string]: any 
 		error = type(result) == "table" and result.error or nil,
 		plan = type(result) == "table" and result.plan or nil,
 		balance = type(result) == "table" and result.balance or nil,
+		status_balance = type(result) == "table" and result.status_balance or nil,
 		windows = windows,
 	}
 end

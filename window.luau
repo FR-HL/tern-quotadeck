@@ -162,7 +162,7 @@ local function segment(item: any): { [string]: any }?
 	end
 	if status == "ok" and type(window) ~= "table" and type(item.balance) == "string" then
 		return {
-			text = labelled(item.balance),
+			text = labelled(item.status_balance or item.balance),
 			icon = icon,
 			tone = nil,
 			command = "plugin.quotadeck.detail",

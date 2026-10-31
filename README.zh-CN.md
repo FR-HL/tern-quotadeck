@@ -87,7 +87,7 @@ OC 4h32m 96%
 | Gemini CLI | `~/.gemini/oauth_creds.json` | Code Assist 额度；只读，不刷新 Token |
 | DeepSeek | 服务商页 **密钥**、`DEEPSEEK_API_KEY`，或 **QuotaDeck: Set DeepSeek API key** | 账户余额（`¥`/`$`），没有百分比窗口 |
 | Magpie | `http://127.0.0.1:3425/v1/magpie/quotas` | 自动发现；包含 Open Design 和 Magpie 管理的插件服务商 |
-| Codex 中转 | `~/.codex/config.toml` | 当前启用的自定义 `model_providers`；读取 New API `/api/usage/token/` |
+| Codex 中转 | `~/.codex/config.toml` | 当前启用的自定义 `model_providers`；读取 New API `/api/usage/token/`，额度换算为美元 |
 | 自定义接口 | 服务商页 **Custom → 添加接口** | 自动识别 New API 的 `/api/usage/token/` 或 OpenAI 的 `dashboard/billing` |
 
 DeepSeek 密钥和自定义接口都使用 Tern 原生输入框，支持正常粘贴。概览只显示已登录且有额度可画的服务商；所有服务商都会出现在 **Providers** 页。每个服务商只有一个状态图标：正常时显示对勾；未登录或登录失效时，同一个图标就是登录/密钥操作，不会再同时出现“登录”和“未登录”两个按钮。后面的网格图标控制概览，仪表图标控制状态栏，悬停可看文字说明。Magpie 项是只读的，并标记为 **自动**。

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.3 — 2026-10-31
+
+- Convert New API credits to USD at 0.000002 per credit for the active Codex
+  relay: the card shows money left and used; the status line shows money left.
+
 ## 0.9.2 — 2026-10-31
 
 - Format relay credit counts compactly (`1.09B used · 831M left`) instead of

@@ -27,15 +27,10 @@ local function short_code(name: string): string
 	return name:sub(1, 3):upper()
 end
 
-local function compact(value: number): string
-	if value >= 1_000_000_000 then
-		return string.format("%.2fB", value / 1_000_000_000):gsub("%.00B$", "B"):gsub("0B$", "B")
-	elseif value >= 1_000_000 then
-		return string.format("%.1fM", value / 1_000_000):gsub("%.0M$", "M")
-	elseif value >= 1_000 then
-		return string.format("%.1fK", value / 1_000):gsub("%.0K$", "K")
-	end
-	return string.format("%.0f", value)
+local CREDIT_USD = 0.000002
+
+local function money(value: number): string
+	return string.format("$%.2f", value * CREDIT_USD)
 end
 
 local function config(): any?
@@ -114,10 +109,11 @@ function provider.fetch(done: (any?) -> ())
 			return
 		end
 		if data.unlimited_quota == true or (granted ~= nil and granted <= 0) then
+			local left = available ~= nil and (money(available) .. " left") or nil
 			done({
 				status = "ok",
-				balance = "Unlimited · " .. compact(used) .. " used"
-				.. (available ~= nil and (" · " .. compact(available) .. " left") or ""),
+				balance = left and (left .. " · " .. money(used) .. " used") or (money(used) .. " used"),
+				status_balance = left,
 				name = cfg.name,
 				short = short_code(cfg.name),
 				plan = "Relay",
@@ -131,7 +127,8 @@ function provider.fetch(done: (any?) -> ())
 		done({
 			status = "ok",
 			windows = { quota = { used = math.max(0, math.min(100, used / granted * 100)) } },
-			balance = available ~= nil and (string.format("%.0f", available) .. " left") or nil,
+			balance = available ~= nil and (money(available) .. " left") or nil,
+			status_balance = available ~= nil and (money(available) .. " left") or nil,
 			name = cfg.name,
 			short = short_code(cfg.name),
 			plan = "Relay",
