@@ -145,7 +145,14 @@ local function visibility_signature(settings: any): string
 	if type(settings.hidden) == "table" then
 		for id, hidden in pairs(settings.hidden) do
 			if hidden then
-				keys[#keys + 1] = id
+				keys[#keys + 1] = "v:" .. id
+			end
+		end
+	end
+	if type(settings.hidden_status) == "table" then
+		for id, hidden in pairs(settings.hidden_status) do
+			if hidden then
+				keys[#keys + 1] = "s:" .. id
 			end
 		end
 	end
@@ -179,7 +186,7 @@ local function rebuild()
 		return
 	end
 	signature = sig
-	local hidden = type(settings) == "table" and type(settings.hidden) == "table" and settings.hidden or {}
+	local hidden = type(settings) == "table" and type(settings.hidden_status) == "table" and settings.hidden_status or {}
 	local l = i18n.resolve(type(settings) == "table" and settings.lang or "auto")
 	local out = {}
 	for _, id in ipairs(stored.order or {}) do

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.4 — 2026-10-31
+
+- Remove the redundant status icon from overview cards.
+- Split visibility into two independent toggles: grid for the overview and
+  gauge for the status bar, for built-in and custom providers.
+- Use Tern icon names for the warning and trash glyphs.
+
 ## 0.7.3 — 2026-10-31
 
 - Provider status and actions are icons with tooltips: signed out, sign in,

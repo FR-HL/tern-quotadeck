@@ -43,6 +43,12 @@ local function settings(): { [string]: any }
 	if type(stored.hidden) ~= "table" then
 		stored.hidden = {}
 	end
+	if type(stored.hidden_status) ~= "table" then
+		stored.hidden_status = {}
+		for id, hidden in pairs(stored.hidden) do
+			stored.hidden_status[id] = hidden
+		end
+	end
 	if type(stored.lang) ~= "string" then
 		stored.lang = "auto"
 	end
@@ -500,7 +506,7 @@ local STATE_ICON = {
 
 local function status_icon(status: string): any
 	local label = select(1, status_label(status))
-	local icon = STATE_ICON[status] or "alert-triangle"
+	local icon = STATE_ICON[status] or "warn"
 	return tern.ui.el("span", {
 		class = "q-state q-state--" .. status,
 		title = label,
@@ -519,6 +525,21 @@ local function icon_button(icon: string, label: string, action: string, class: s
 	}, {
 		tern.ui.node("icon", { name = icon }),
 	})
+end
+
+local function add_visibility_buttons(actions: { any }, l: string, id: string, view_hidden: boolean, status_hidden: boolean)
+	actions[#actions + 1] = icon_button(
+		"grid",
+		i18n.t(l, view_hidden and "show_overview" or "hide_overview"),
+		(view_hidden and "show_view=" or "hide_view=") .. id,
+		"q-choice q-icon-choice" .. (view_hidden and " q-icon-choice--quiet" or " q-icon-choice--primary")
+	)
+	actions[#actions + 1] = icon_button(
+		"gauge",
+		i18n.t(l, status_hidden and "show_status" or "hide_status"),
+		(status_hidden and "show_status=" or "hide_status=") .. id,
+		"q-choice q-icon-choice" .. (status_hidden and " q-icon-choice--quiet" or " q-icon-choice--primary")
+	)
 end
 
 local function reset_text(iso: any): string
@@ -585,7 +606,6 @@ local function provider_card(item: any, collapsed: boolean): any
 	local header = tern.ui.el("button", { class = "q-head", actions = { click = "fold=" .. item.id } }, {
 		tern.ui.node("icon", { name = item.icon or "puzzle" }),
 		tern.ui.text({ tern.ui.span(item.name or item.id or "Provider", "strong") }),
-		status_icon(item.status),
 		tern.ui.node("icon", { name = collapsed and "chev-r" or "chev-up" }),
 	})
 	local children = { header }
@@ -630,6 +650,7 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 		local item = state.providers and state.providers[id]
 		if type(item) == "table" then
 			local hidden = settings_value.hidden[id] == true
+			local status_hidden = settings_value.hidden_status[id] == true
 			local actions: { any } = {}
 			local auto = item.source == "magpie"
 			if not auto then
@@ -642,12 +663,7 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 					"q-choice q-icon-choice q-icon-choice--primary"
 				)
 			end
-			actions[#actions + 1] = icon_button(
-				hidden and "eye" or "eye-off",
-				i18n.t(l, hidden and "show" or "hide"),
-				(hidden and "show=" or "hide=") .. id,
-				"q-choice q-icon-choice q-icon-choice--quiet"
-			)
+			add_visibility_buttons(actions, l, id, hidden, status_hidden)
 			local name_spans = { tern.ui.span(item.name or id, "strong") }
 			if auto then
 				name_spans[#name_spans + 1] = tern.ui.span("  " .. i18n.t(l, "auto"), "dim")
@@ -679,6 +695,21 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 		else
 			kind_label = i18n.t(l, "auto")
 		end
+		local relay_id = "relay-" .. index
+		local actions: { any } = {}
+		add_visibility_buttons(
+			actions,
+			l,
+			relay_id,
+			settings_value.hidden[relay_id] == true,
+			settings_value.hidden_status[relay_id] == true
+		)
+		actions[#actions + 1] = icon_button(
+			"trash",
+			i18n.t(l, "remove"),
+			"remove_relay=" .. index,
+			"q-choice q-icon-choice q-icon-choice--danger"
+		)
 		local children: { any } = {
 			tern.ui.el("div", { class = "q-row q-status-row" }, {
 				tern.ui.node("icon", { name = "globe" }),
@@ -694,12 +725,7 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 					min = { w = 0 },
 				}),
 				status_icon(type(item) == "table" and item.status or "error"),
-				icon_button(
-					"trash-2",
-					i18n.t(l, "remove"),
-					"remove_relay=" .. index,
-					"q-choice q-icon-choice q-icon-choice--danger"
-				),
+				tern.ui.el("div", { class = "q-choices" }, actions),
 			}),
 		}
 		if type(item) == "table" and item.status ~= "ok" and item.error then
@@ -930,12 +956,20 @@ tern.block.define("detail", {
 			tern.kv.set("settings", current)
 			tern.kv.set("request", 1)
 			cx:render()
-		elseif ev.act == "hide" then
+		elseif ev.act == "hide_view" then
 			current.hidden[ev.value] = true
 			tern.kv.set("settings", current)
 			cx:render()
-		elseif ev.act == "show" then
+		elseif ev.act == "show_view" then
 			current.hidden[ev.value] = nil
+			tern.kv.set("settings", current)
+			cx:render()
+		elseif ev.act == "hide_status" then
+			current.hidden_status[ev.value] = true
+			tern.kv.set("settings", current)
+			cx:render()
+		elseif ev.act == "show_status" then
+			current.hidden_status[ev.value] = nil
 			tern.kv.set("settings", current)
 			cx:render()
 		elseif ev.act == "lang" then
@@ -945,7 +979,7 @@ tern.block.define("detail", {
 		elseif ev.act == "setup" then
 			tern.kv.set("ui_action", "setup:" .. ev.value)
 		elseif ev.act == "add_relay" then
-			tern.kv.set("ui_action", "add_relay=" .. (ev.value == "newapi" and "newapi" or "openai"))
+			tern.kv.set("ui_action", "add_relay=" .. (ev.value or "auto"))
 		elseif ev.act == "remove_relay" then
 			local index = tonumber(ev.value)
 			if index and current.relays and current.relays[index] then
