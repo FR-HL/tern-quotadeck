@@ -65,7 +65,15 @@ OC 5h 4h32m 96% | ↓ 2.3 MB/s ↑ 38 KB/s
 Settings → **Status line** lets you choose:
 
 - value: remaining or used
+- names: short codes (default, `OC`, `OD`, `CX`) or full provider names
 - show window label, reset countdown, percentage and network speed; the speed module has separate download/upload colors
+
+Window labels are normalized to `5h`, `7d` and `mo` for every source, so
+OpenCode and Open Design share one format:
+
+```text
+OD 5h 2h51m 93% | OC 5h 2h41m 91%
+```
 
 For example, countdown plus remaining only:
 

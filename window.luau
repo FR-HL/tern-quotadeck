@@ -16,6 +16,34 @@ local WINDOW_LABEL = {
 	completions = "code",
 }
 
+local function window_label(key: any, label: any): string
+	local known = WINDOW_LABEL[key]
+	if known then
+		return known
+	end
+	local text = type(label) == "string" and label:lower() or ""
+	if text:find("5", 1, true) and (text:find("hour", 1, true) or text:find("小时", 1, true)) then
+		return "5h"
+	end
+	if (text:find("7", 1, true) or text:find("week", 1, true))
+		and (text:find("day", 1, true) or text:find("week", 1, true) or text:find("天", 1, true)) then
+		return "7d"
+	end
+	if text:find("month", 1, true) or text:find("月", 1, true) then
+		return "mo"
+	end
+	if text:find("premium", 1, true) then
+		return "premium"
+	end
+	if text:find("chat", 1, true) then
+		return "chat"
+	end
+	if text:find("completion", 1, true) then
+		return "code"
+	end
+	return type(label) == "string" and label or "window"
+end
+
 local segments: { { [string]: any } } = {}
 
 local function minutes_until(iso: any): number?
@@ -61,6 +89,7 @@ local function status_format(settings: any): { [string]: any }
 	local tones = { success = true, error = true, warning = true, info = true, accent = true, muted = true, neutral = true }
 	return {
 		mode = sf.mode == "used" and "used" or "remaining",
+		names = sf.names == "full" and "full" or "short",
 		window = sf.window ~= false,
 		reset = sf.reset ~= false,
 		percent = sf.percent ~= false,
@@ -90,14 +119,17 @@ local function segment(item: any): { [string]: any }?
 	if status == "signed_out" then
 		return nil
 	end
+	local name = sf.names == "full"
+		and (item.name or item.short or "quota")
+		or (item.short or item.name or "quota")
 	local window = type(item.windows) == "table" and item.windows[1] or nil
 	if status == "ok" and type(window) == "table" then
 		local left = remaining(window.used)
-		local label = WINDOW_LABEL[window.key] or window.label or "window"
+		local label = window_label(window.key, window.label)
 		local delta = short_delta(window.resets_at)
 		local used = math.max(0, math.min(100, math.floor(window.used + 0.5)))
 		local pct = sf.mode == "used" and used or math.floor(left + 0.5)
-		local text = item.short or item.name or "quota"
+		local text = name
 		local first = {}
 		if sf.window then
 			first[#first + 1] = label
@@ -120,17 +152,17 @@ local function segment(item: any): { [string]: any }?
 	end
 	if status == "ok" and type(window) ~= "table" and type(item.balance) == "string" then
 		return {
-			text = string.format("%s %s", item.short or item.name or "quota", item.balance),
+			text = string.format("%s %s", name, item.balance),
 			icon = item.icon or "puzzle",
 			tone = nil,
 			command = "plugin.quota.detail",
 		}
 	end
 	if status == "auth" then
-		return { text = (item.short or item.name or "quota") .. " " .. i18n.t(l, "auth"), icon = item.icon or "puzzle", tone = "error", command = "plugin.quota.detail" }
+		return { text = name .. " " .. i18n.t(l, "auth"), icon = item.icon or "puzzle", tone = "error", command = "plugin.quota.detail" }
 	end
 	if status == "error" then
-		return { text = (item.short or item.name or "quota") .. " " .. i18n.t(l, "unavailable"), icon = item.icon or "puzzle", tone = "error", command = "plugin.quota.detail" }
+		return { text = name .. " " .. i18n.t(l, "unavailable"), icon = item.icon or "puzzle", tone = "error", command = "plugin.quota.detail" }
 	end
 	return nil
 end
@@ -164,6 +196,7 @@ local function format_signature(settings: any): string
 	local sf = status_format(settings)
 	return table.concat({
 		sf.mode,
+		sf.names,
 		tostring(sf.window),
 		tostring(sf.reset),
 		tostring(sf.percent),

@@ -5,7 +5,7 @@ local util = require("./util")
 local provider = {
 	id = "claude",
 	name = "Claude",
-	short = "Claude",
+	short = "CL",
 	icon = "provider-anthropic",
 	windows = {
 		{ key = "five_hour", label = "5 hours" },

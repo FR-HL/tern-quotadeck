@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.8.2 · 2026-10-31
+Tern 0.9.8 · plugin 0.8.3 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 
@@ -31,10 +31,12 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
   window/countdown/percentage/network toggles all take effect immediately.
 - Status line: modules are separated with `|`; items inside one provider module
   are not split. The separator is its own segment with the default white color
-  and does not inherit the download or upload tone. Example:
+  and does not inherit the download or upload tone. Window labels normalize to
+  `5h`/`7d`/`mo`, and the Names setting switched between `OD`/`OC` and full
+  names. Example:
 
   ```text
-  OC 5h 4h32m 96% | ↓ 2.3 MB/s ↑ 38 KB/s
+  OD 5h 2h51m 93% | OC 5h 2h41m 91% | ↓ 2.3 MB/s ↑ 38 KB/s
   ```
 
 - Bottom dock: three equal-width tabs, consistent 12px outer padding and gap;

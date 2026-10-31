@@ -7,7 +7,7 @@ local util = require("./util")
 local provider = {
 	id = "gemini",
 	name = "Gemini CLI",
-	short = "Gemini",
+	short = "GM",
 	icon = "provider-google-gemini-cli",
 	windows = {
 		{ key = "quota", label = "Quota" },

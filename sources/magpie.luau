@@ -23,6 +23,24 @@ local function icon_for(id: string): string
 	return known[id] or "globe"
 end
 
+local function short_for(id: string, name: string): string
+	local known = {
+		["opencode-go"] = "OC",
+		["opencode-zen"] = "OZ",
+		opendesign = "OD",
+		claude = "CL",
+		codex = "CX",
+		gemini = "GM",
+		cursor = "CU",
+		deepseek = "DS",
+	}
+	if known[id] then
+		return known[id]
+	end
+	local initials = name:gsub("[^%w ]", ""):gsub("(%a)%S*%s*", "%1"):upper()
+	return initials ~= "" and initials or name
+end
+
 local function item_from(entry: any): any?
 	if type(entry) ~= "table" or type(entry.provider) ~= "string" or entry.provider == "" then
 		return nil
@@ -41,7 +59,7 @@ local function item_from(entry: any): any?
 	return {
 		id = entry.provider,
 		name = type(entry.name) == "string" and entry.name or entry.provider,
-		short = type(entry.name) == "string" and entry.name or entry.provider,
+		short = short_for(entry.provider, type(entry.name) == "string" and entry.name or entry.provider),
 		icon = icon_for(entry.provider),
 		status = "ok",
 		source = "magpie",

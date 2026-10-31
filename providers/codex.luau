@@ -7,7 +7,7 @@ local util = require("./util")
 local provider = {
 	id = "codex",
 	name = "Codex",
-	short = "Codex",
+	short = "CX",
 	icon = "provider-openai-codex",
 	windows = {
 		{ key = "five_hour", label = "5 hours" },

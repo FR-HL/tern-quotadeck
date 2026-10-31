@@ -6,7 +6,7 @@ local util = require("./util")
 local provider = {
 	id = "copilot",
 	name = "GitHub Copilot",
-	short = "Copilot",
+	short = "CP",
 	icon = "provider-github-copilot",
 	windows = {
 		{ key = "premium_interactions", label = "Premium requests" },

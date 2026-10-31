@@ -76,6 +76,9 @@ local function settings(): { [string]: any }
 	if sf.mode ~= "used" then
 		sf.mode = "remaining"
 	end
+	if sf.names ~= "full" then
+		sf.names = "short"
+	end
 	if type(sf.window) ~= "boolean" then
 		sf.window = true
 	end
@@ -191,6 +194,14 @@ local function headers_for(relay: any, browser_ua: boolean): { [string]: string 
 	return headers
 end
 
+local function short_code(name: string): string
+	local initials = name:gsub("[^%w%s]", ""):gsub("(%a)%S*%s*", "%1"):upper()
+	if #initials >= 2 then
+		return initials
+	end
+	return name:sub(1, 3):upper()
+end
+
 local function grouped(value: number): string
 	local text = string.format("%.0f", value)
 	local result = text:reverse():gsub("(%d%d%d)", "%1,"):reverse()
@@ -295,10 +306,11 @@ local function fetch_relay(relay: any, index: number, done: (any) -> ())
 	if kind ~= "newapi" and kind ~= "openai" then
 		kind = "auto"
 	end
+	local name = type(relay.name) == "string" and relay.name ~= "" and relay.name or ("Relay " .. index)
 	local meta = {
 		id = "relay-" .. index,
-		name = type(relay.name) == "string" and relay.name ~= "" and relay.name or ("Relay " .. index),
-		short = type(relay.name) == "string" and relay.name ~= "" and relay.name or ("Relay " .. index),
+		name = name,
+		short = short_code(name),
 		icon = "globe",
 		source = "custom",
 		windows = { { key = "quota", label = "Quota" } },
@@ -959,6 +971,18 @@ local function settings_view(state: any, settings_value: { [string]: any }): any
 			actions = { click = "status_mode=" .. value },
 		})
 	end
+	local name_options: { any } = {}
+	for _, option in ipairs({
+		{ "short", i18n.t(l, "short_names") },
+		{ "full", i18n.t(l, "full_names") },
+	}) do
+		local value, label = option[1], option[2]
+		name_options[#name_options + 1] = tern.ui.el("button", {
+			class = "q-choice" .. (sf.names == value and " q-choice--on" or ""),
+			text = label,
+			actions = { click = "status_names=" .. value },
+		})
+	end
 	local toggles: { any } = {}
 	for _, option in ipairs({
 		{ "window", i18n.t(l, "window") },
@@ -1017,6 +1041,10 @@ local function settings_view(state: any, settings_value: { [string]: any }): any
 		tern.ui.el("div", { class = "q-setting" }, {
 			tern.ui.text({ tern.ui.span(i18n.t(l, "status_quota"), "muted") }),
 			tern.ui.el("div", { class = "q-choices" }, modes),
+		}),
+		tern.ui.el("div", { class = "q-setting" }, {
+			tern.ui.text({ tern.ui.span(i18n.t(l, "status_names"), "muted") }),
+			tern.ui.el("div", { class = "q-choices" }, name_options),
 		}),
 		tern.ui.el("div", { class = "q-setting" }, {
 			tern.ui.text({ tern.ui.span(i18n.t(l, "status_show"), "muted") }),
@@ -1269,6 +1297,10 @@ tern.block.define("detail", {
 			cx:render()
 		elseif ev.act == "status_mode" then
 			current.status_format.mode = ev.value == "used" and "used" or "remaining"
+			tern.kv.set("settings", current)
+			cx:render()
+		elseif ev.act == "status_names" then
+			current.status_format.names = ev.value == "full" and "full" or "short"
 			tern.kv.set("settings", current)
 			cx:render()
 		elseif ev.act == "status_toggle" then

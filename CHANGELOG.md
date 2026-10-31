@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.3 — 2026-10-31
+
+- Normalize status-line window labels (5h/7d/mo) and provider names across
+  sources, so OpenCode and Open Design no longer use different formats.
+- Add Status line → Names: short codes (default) or full names.
+
 ## 0.8.2 — 2026-10-31
 
 - Add a provider icon strip at the top of Overview; clicking one filters

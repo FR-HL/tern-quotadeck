@@ -5,7 +5,7 @@ local util = require("./util")
 local provider = {
 	id = "deepseek",
 	name = "DeepSeek",
-	short = "DeepSeek",
+	short = "DS",
 	icon = "provider-deepseek",
 	windows = {},
 }

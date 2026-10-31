@@ -5,7 +5,7 @@ local util = require("./util")
 local provider = {
 	id = "cursor",
 	name = "Cursor",
-	short = "Cursor",
+	short = "CU",
 	icon = "provider-cursor",
 	windows = {
 		{ key = "included", label = "Included" },
