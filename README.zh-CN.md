@@ -12,6 +12,7 @@ Quota 只读取本机各 CLI 已经保存的登录信息，由 Tern 守护进程
 
 - OpenCode Go、Claude、Codex、GitHub Copilot、Cursor、Gemini CLI、DeepSeek
 - **概览**里的上下文区块直接读取 omp、Claude Code、Codex 的会话记录
+- 概览顶部有服务商图标条：点一个只显示该服务商的额度和会话，点 **全部** 恢复
 - 可插拔适配器：`providers/`、`sources/`、`contexts/` 下的每个 `.luau` 自动加载
 - Magpie 的服务商通过本地额度接口自动出现，包括 Open Design 和插件管理的账号
 - 一个自定义接口，自动识别 New API / One API 中转或 OpenAI 计费接口
@@ -96,7 +97,7 @@ DeepSeek 密钥和自定义接口都使用 Tern 原生输入框，支持正常�
 
 底部 dock 有三个标签：
 
-- **Overview**：额度卡片下方是 **上下文** 区块，读取各 Agent 自己最新的会话记录：omp、Claude Code、Codex；显示已用/窗口、百分比和更新时间。没有登录、Key 或配置。
+- **Overview**：顶部服务商图标条可筛选页面；下面是额度卡片，再下面是 **上下文** 区块，读取各 Agent 自己最新的会话记录：omp、Claude Code、Codex；显示已用/窗口、百分比和更新时间。没有登录、Key 或配置。
 - **Providers**：每个服务商只有一个状态图标：正常时是对勾，异常时同一个图标就是登录/密钥操作；之后是 **网格**（概览）和 **仪表**（状态栏）两个可见性开关，悬停显示文字，两者都不会退出登录。**Custom → 添加接口** 用 Tern 原生输入框依次询问名称、地址和 Key，然后自动识别额度协议。
 - **Settings**：刷新间隔（1/2/5 分钟）、语言（Auto、English、中文）、打开方式（默认 Floating，也可 Tab、Docked），以及状态栏格式。
 

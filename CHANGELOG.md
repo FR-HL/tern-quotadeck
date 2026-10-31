@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.2 — 2026-10-31
+
+- Add a provider icon strip at the top of Overview; clicking one filters
+  quota cards and context sessions to that provider. An All icon restores both.
+
 ## 0.8.1 — 2026-10-31
 
 - Move the Context section from its own tab onto Overview.

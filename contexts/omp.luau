@@ -48,10 +48,15 @@ function adapter.fetch(done: (any) -> ())
 		end
 		local cwd = util.cwd_of(head or tail)
 		local window = model and (windows()[model] or models.window(model)) or nil
+		local provider = type(model) == "string" and model:match("^([^/]+)/") or "opencode"
+		if provider == "opencode-go" then
+			provider = "opencode"
+		end
 		done({
 			{
 				agent = adapter.name,
 				icon = adapter.icon,
+				provider = provider,
 				project = util.project_of(cwd) or util.project_from_path(path),
 				model = model,
 				used = used,

@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.8.1 · 2026-10-31
+Tern 0.9.8 · plugin 0.8.2 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 
@@ -24,6 +24,9 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
   used/window, percentage and age; omp's numeric millisecond timestamp and
   Codex's direct context window were handled. The bottom dock stayed at three
   tabs.
+- Overview filter: the icon strip showed All, OpenCode Go, Codex, Claude and
+  Open Design; choosing OpenCode kept only its quota card and dropped unrelated
+  context, while Codex showed its context and All restored the complete page.
 - Settings: refresh interval, language, open mode, remaining/used value, and
   window/countdown/percentage/network toggles all take effect immediately.
 - Status line: modules are separated with `|`; items inside one provider module

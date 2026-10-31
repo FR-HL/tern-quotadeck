@@ -43,6 +43,7 @@ function adapter.fetch(done: (any) -> ())
 			{
 				agent = adapter.name,
 				icon = adapter.icon,
+				provider = "codex",
 				project = util.project_of(cwd) or util.project_from_path(path),
 				model = model,
 				used = used,

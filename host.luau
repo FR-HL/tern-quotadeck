@@ -704,16 +704,96 @@ end
 
 local context_section
 
-local function main_view(state: any, settings_value: { [string]: any }): any
-	local l = lang()
-	local nodes: { any } = {}
+local function context_provider(session: any): string?
+	local provider = type(session) == "table" and session.provider or nil
+	if type(provider) ~= "string" and type(session) == "table" and type(session.model) == "string" then
+		provider = session.model:match("^([^/]+)/")
+	end
+	if provider == "opencode-go" then
+		provider = "opencode"
+	end
+	return type(provider) == "string" and provider or nil
+end
+
+local function filter_entries(state: any, settings_value: { [string]: any }): { any }
+	local out, seen = {}, {}
+	local function add(id: any, name: any, icon: any)
+		if type(id) ~= "string" or id == "" or seen[id] then
+			return
+		end
+		seen[id] = true
+		out[#out + 1] = { id = id, name = name or id, icon = icon or "puzzle" }
+	end
 	for _, id in ipairs(state.order or {}) do
 		local item = state.providers and state.providers[id]
-		if type(item) == "table" and settings_value.hidden[id] ~= true and item.status == "ok" then
+		if type(item) == "table" and item.status == "ok" and settings_value.hidden[id] ~= true then
+			add(id, item.name, item.icon)
+		end
+	end
+	local context = tern.kv.get("context_state")
+	if type(context) == "table" and type(context.sessions) == "table" then
+		for _, session in ipairs(context.sessions) do
+			local provider = context_provider(session)
+			local item = provider and state.providers and state.providers[provider] or nil
+			add(
+				provider,
+				type(item) == "table" and item.name or session.agent or session.provider,
+				type(item) == "table" and item.icon or session.icon
+			)
+		end
+	end
+	return out
+end
+
+local function filter_strip(entries: { any }, selected: string): any
+	local l = lang()
+	local tiles: { any } = {
+		icon_button(
+			"grid",
+			i18n.t(l, "all"),
+			"filter=all",
+			"q-choice q-icon-choice" .. (selected == "all" and " q-icon-choice--primary" or "")
+		),
+	}
+	for _, entry in ipairs(entries) do
+		tiles[#tiles + 1] = icon_button(
+			entry.icon,
+			entry.name,
+			"filter=" .. entry.id,
+			"q-choice q-icon-choice" .. (selected == entry.id and " q-icon-choice--primary" or "")
+		)
+	end
+	return tern.ui.el("div", { class = "q-filter-row" }, tiles)
+end
+
+local function main_view(state: any, settings_value: { [string]: any }, block_state: any): any
+	local l = lang()
+	local entries = filter_entries(state, settings_value)
+	local selected = type(block_state) == "table" and block_state.filter or "all"
+	if selected ~= "all" then
+		local found = false
+		for _, entry in ipairs(entries) do
+			if entry.id == selected then
+				found = true
+				break
+			end
+		end
+		if not found then
+			selected = "all"
+		end
+	end
+	local nodes: { any } = {}
+	if #entries > 0 then
+		nodes[#nodes + 1] = filter_strip(entries, selected)
+	end
+	for _, id in ipairs(state.order or {}) do
+		local item = state.providers and state.providers[id]
+		if type(item) == "table" and settings_value.hidden[id] ~= true and item.status == "ok"
+			and (selected == "all" or id == selected) then
 			nodes[#nodes + 1] = provider_card(item, settings_value.collapsed[id] == true)
 		end
 	end
-	local context = context_section()
+	local context = context_section(selected)
 	if #nodes == 0 and not context then
 		nodes[1] = tern.ui.text({ tern.ui.span(i18n.t(l, "no_providers"), "muted") })
 	end
@@ -995,7 +1075,7 @@ local function context_ago(iso: any): string
 	return string.format("%dd", secs // 86400)
 end
 
-context_section = function(): any?
+context_section = function(selected: string?): any?
 	local l = lang()
 	local stored = tern.kv.get("context_state")
 	local sessions = type(stored) == "table" and stored.sessions or nil
@@ -1004,6 +1084,9 @@ context_section = function(): any?
 	end
 	local cards: { any } = {}
 	for _, session in ipairs(sessions) do
+		if selected and selected ~= "all" and context_provider(session) ~= selected then
+			continue
+		end
 		local used = tonumber(session.used) or 0
 		local window = tonumber(session.window)
 		local percent = window and window > 0 and math.max(0, math.min(100, used / window * 100)) or nil
@@ -1056,6 +1139,9 @@ context_section = function(): any?
 		children[#children + 1] = tern.ui.el("div", { class = "q-row" }, values)
 		cards[#cards + 1] = tern.ui.el("div", { class = "q-card" }, children)
 	end
+	if #cards == 0 then
+		return nil
+	end
 	local body = {
 		tern.ui.text({ tern.ui.span(i18n.t(l, "context"), "strong") }),
 		tern.ui.text({ tern.ui.span(i18n.t(l, "context_hint"), "dim") }),
@@ -1066,7 +1152,7 @@ context_section = function(): any?
 	return tern.ui.node("col", { gap = "md" }, body)
 end
 
-local function block_view(_state: any): any
+local function block_view(block_state: any): any
 	local state_value = tern.kv.get("state")
 	local settings_value = settings()
 	local l = lang()
@@ -1085,7 +1171,7 @@ local function block_view(_state: any): any
 	elseif block_view_name == "settings" then
 		page = settings_view(state_value, settings_value)
 	else
-		page = main_view(state_value, settings_value)
+		page = main_view(state_value, settings_value, block_state)
 	end
 	return { main = page, dock = dock }
 end
@@ -1101,7 +1187,7 @@ tern.block.define("detail", {
 		if nav ~= nil then
 			tern.kv.set("navigate", nil)
 		end
-		return { seen = 0 }
+		return { seen = 0, filter = "all" }
 	end,
 	view = function(state: any, _cx: any): any
 		return block_view(state)
@@ -1122,7 +1208,7 @@ tern.block.define("detail", {
 		end
 		return false
 	end,
-	event = function(_state: any, ev: any, cx: any)
+	event = function(state: any, ev: any, cx: any)
 		if ev.ev ~= "action" or type(ev.act) ~= "string" then
 			return
 		end
@@ -1131,6 +1217,9 @@ tern.block.define("detail", {
 			local id = ev.value
 			current.collapsed[id] = not current.collapsed[id]
 			tern.kv.set("settings", current)
+			cx:render()
+		elseif ev.act == "filter" then
+			state.filter = ev.value or "all"
 			cx:render()
 		elseif ev.act == "view" then
 			block_view_name = (ev.value == "providers" and "providers")
