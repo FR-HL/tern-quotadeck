@@ -1,12 +1,12 @@
-# Quota
+# QuotaDeck
 
 English | [简体中文](README.zh-CN.md)
 
 Remaining coding-agent quota in Tern's status line, with a native detail page.
 
-![Quota detail page](docs/preview.png)
+![QuotaDeck detail page](docs/preview.png)
 
-Quota reads the logins your CLIs already keep on this machine, asks each
+QuotaDeck reads the logins your CLIs already keep on this machine, asks each
 vendor's usage endpoint from the daemon, and renders the result with Tern's
 native UI. One fetch covers every window; a broken or expired login never
 hides the other providers.
@@ -46,7 +46,7 @@ tern plugin link /path/to/tern-quota
 tern plugin reload
 ```
 
-Click the status segment, or run **Quota: Show details**, to open the detail
+Click the status segment, or run **QuotaDeck: Show details**, to open the detail
 page. Preferences → Plugins can also install a directory or Git URL.
 
 ## Status line
@@ -100,7 +100,7 @@ Tern runs.
 | GitHub Copilot | Copilot CLI `hosts.json`, else `gh auth token` | Premium requests, chat, completions |
 | Cursor | `Cursor/auth.json` | Included and API usage |
 | Gemini CLI | `~/.gemini/oauth_creds.json` | Code Assist quota; read-only, no token refresh |
-| DeepSeek | Providers → **Key**, `DEEPSEEK_API_KEY`, or **Quota: Set DeepSeek API key** | Account balance (`¥`/`$`), no percentage windows |
+| DeepSeek | Providers → **Key**, `DEEPSEEK_API_KEY`, or **QuotaDeck: Set DeepSeek API key** | Account balance (`¥`/`$`), no percentage windows |
 | Magpie | `http://127.0.0.1:3425/v1/magpie/quotas` | Auto-detected; includes Open Design and plugin providers Magpie tracks |
 | Custom endpoint | Providers → **Custom → Add endpoint** | Auto-detects New API `/api/usage/token/` or OpenAI `dashboard/billing` |
 
@@ -117,11 +117,11 @@ read-only and marked **Auto**.
 
 | Command | What it does |
 | --- | --- |
-| **Quota: Show details** | Opens the one detail page (or focuses it) |
-| **Quota: Choose providers** | Opens the detail page on Providers |
-| **Quota: Settings** | Opens the detail page on Settings |
-| **Quota: Set DeepSeek API key** | Asks for the DeepSeek key with Tern's native prompt |
-| **Quota: Refresh now** | Fetches immediately instead of waiting |
+| **QuotaDeck: Show details** | Opens the one detail page (or focuses it) |
+| **QuotaDeck: Choose providers** | Opens the detail page on Providers |
+| **QuotaDeck: Settings** | Opens the detail page on Settings |
+| **QuotaDeck: Set DeepSeek API key** | Asks for the DeepSeek key with Tern's native prompt |
+| **QuotaDeck: Refresh now** | Fetches immediately instead of waiting |
 
 Only one detail page exists per window: clicking the status segment again
 focuses it instead of opening another. Inside the page, `r` refreshes and
@@ -164,9 +164,9 @@ private to your user account, not as a secret vault.
 ## Limitations
 
 - Codex and Copilot use undocumented endpoints; they can change without notice.
-- Claude and Gemini tokens are used as stored; Quota does not refresh them.
+- Claude and Gemini tokens are used as stored; QuotaDeck does not refresh them.
   Re-run the provider CLI if a token expires.
-- Quota is a window plugin: it reads the machine the window runs on, not a
+- QuotaDeck is a window plugin: it reads the machine the window runs on, not a
   remote host's.
 - Context shows recent sessions (up to eight per agent), not necessarily the
   session in a particular pane; parallel sessions can make that ambiguous.
@@ -217,7 +217,7 @@ copyright and permission notice in `LICENSE` are kept.
 
 - Built for [Tern](https://stencil.so/tern) by Stencil.
 - Provider names, endpoints and CLI login formats belong to their respective
-  vendors. Quota is an independent, unofficial client and is not endorsed by
+  vendors. QuotaDeck is an independent, unofficial client and is not endorsed by
   any provider.
 - No vendor documentation text or credential files are bundled with this
   repository.

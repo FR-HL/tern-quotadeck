@@ -416,7 +416,7 @@
 
 /* Tern's floating chrome is 27px by default; give this pane a standard 40px
    title strip while keeping its native drag and window controls. */
-header.tn-head[title='Quota'] {
+header.tn-head[title='QuotaDeck'] {
 	min-height: 40px !important;
 	padding: 6px 10px !important;
 	font-size: 13px !important;

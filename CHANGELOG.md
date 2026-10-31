@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.11 — 2026-10-31
+
+- Rename the display name, block title, commands and documentation to
+  QuotaDeck; the internal plugin id stays `quota` for compatibility.
+
 ## 0.8.10 — 2026-10-31
 
 - Move history charts into expanded Context details: context-token history and

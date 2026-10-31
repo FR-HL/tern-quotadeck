@@ -1324,7 +1324,7 @@ tern.block.define("detail", {
 		return block_view(state)
 	end,
 	title = function(_state: any): string?
-		return "Quota"
+		return "QuotaDeck"
 	end,
 	key = function(_state: any, key: any, cx: any): boolean?
 		local kname = type(key.name) == "string" and key.name:lower() or ""

@@ -405,7 +405,7 @@ local function open_detail(cx)
 		pane = cx:new_block(KIND, nil, "tab", { focus = true })
 	end
 	if not pane then
-		cx:toast("error", "Quota", "block unavailable")
+		cx:toast("error", "QuotaDeck", "block unavailable")
 		return
 	end
 	tern.kv.set("detail_pane", pane)
@@ -417,17 +417,17 @@ end
 
 tern.command({
 	id = "detail",
-	title = "Quota: Show details",
+	title = "QuotaDeck: Show details",
 	icon = "gauge",
-	group = "Quota",
+	group = "QuotaDeck",
 	run = open_detail,
 })
 
 tern.command({
 	id = "providers",
-	title = "Quota: Choose providers",
+	title = "QuotaDeck: Choose providers",
 	icon = "sliders",
-	group = "Quota",
+	group = "QuotaDeck",
 	run = function(cx)
 		tern.kv.set("navigate", "providers")
 		open_detail(cx)
@@ -436,9 +436,9 @@ tern.command({
 
 tern.command({
 	id = "settings",
-	title = "Quota: Settings",
+	title = "QuotaDeck: Settings",
 	icon = "gear",
-	group = "Quota",
+	group = "QuotaDeck",
 	run = function(cx)
 		tern.kv.set("navigate", "settings")
 		open_detail(cx)
@@ -447,9 +447,9 @@ tern.command({
 
 tern.command({
 	id = "deepseek_key",
-	title = "Quota: Set DeepSeek API key",
+	title = "QuotaDeck: Set DeepSeek API key",
 	icon = "key",
-	group = "Quota",
+	group = "QuotaDeck",
 	run = function(cx)
 		set_deepseek_key(cx)
 	end,
@@ -457,9 +457,9 @@ tern.command({
 
 tern.command({
 	id = "refresh",
-	title = "Quota: Refresh now",
+	title = "QuotaDeck: Refresh now",
 	icon = "swap",
-	group = "Quota",
+	group = "QuotaDeck",
 	run = function(cx)
 		tern.kv.set("request", 1)
 		cx:toast("info", "Refreshing quota…")

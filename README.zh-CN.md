@@ -1,12 +1,12 @@
-# Quota
+# QuotaDeck
 
 [English](README.md) | 简体中文
 
 在 Tern 状态栏显示 AI 编程套餐的剩余额度，并提供原生详情页。
 
-![Quota 详情页](docs/preview.png)
+![QuotaDeck 详情页](docs/preview.png)
 
-Quota 只读取本机各 CLI 已经保存的登录信息，由 Tern 守护进程向各厂商的用量接口发起请求，再用 Tern 原生 UI 展示结果。一次请求覆盖所有窗口；某个登录失效不会影响其他服务商。
+QuotaDeck 只读取本机各 CLI 已经保存的登录信息，由 Tern 守护进程向各厂商的用量接口发起请求，再用 Tern 原生 UI 展示结果。一次请求覆盖所有窗口；某个登录失效不会影响其他服务商。
 
 ## 功能
 
@@ -37,7 +37,7 @@ tern plugin link /path/to/tern-quota
 tern plugin reload
 ```
 
-点击状态栏额度段，或在命令面板运行 **Quota: Show details**，打开详情页。也可以在 **Preferences → Plugins** 里安装 Git 地址或本地目录。
+点击状态栏额度段，或在命令面板运行 **QuotaDeck: Show details**，打开详情页。也可以在 **Preferences → Plugins** 里安装 Git 地址或本地目录。
 
 ## 状态栏
 
@@ -84,7 +84,7 @@ OC 4h32m 96%
 | GitHub Copilot | Copilot CLI 的 `hosts.json`，否则 `gh auth token` | 高级请求、聊天、补全 |
 | Cursor | `Cursor/auth.json` | Included 和 API 用量 |
 | Gemini CLI | `~/.gemini/oauth_creds.json` | Code Assist 额度；只读，不刷新 Token |
-| DeepSeek | 服务商页 **密钥**、`DEEPSEEK_API_KEY`，或 **Quota: Set DeepSeek API key** | 账户余额（`¥`/`$`），没有百分比窗口 |
+| DeepSeek | 服务商页 **密钥**、`DEEPSEEK_API_KEY`，或 **QuotaDeck: Set DeepSeek API key** | 账户余额（`¥`/`$`），没有百分比窗口 |
 | Magpie | `http://127.0.0.1:3425/v1/magpie/quotas` | 自动发现；包含 Open Design 和 Magpie 管理的插件服务商 |
 | 自定义接口 | 服务商页 **Custom → 添加接口** | 自动识别 New API 的 `/api/usage/token/` 或 OpenAI 的 `dashboard/billing` |
 
@@ -94,11 +94,11 @@ DeepSeek 密钥和自定义接口都使用 Tern 原生输入框，支持正常�
 
 | 命令 | 作用 |
 | --- | --- |
-| **Quota: Show details** | 打开唯一的详情页，或聚焦已打开的详情页 |
-| **Quota: Choose providers** | 在详情页打开 Providers |
-| **Quota: Settings** | 在详情页打开 Settings |
-| **Quota: Set DeepSeek API key** | 用 Tern 原生输入框询问 DeepSeek Key |
-| **Quota: Refresh now** | 立即刷新，不等定时器 |
+| **QuotaDeck: Show details** | 打开唯一的详情页，或聚焦已打开的详情页 |
+| **QuotaDeck: Choose providers** | 在详情页打开 Providers |
+| **QuotaDeck: Settings** | 在详情页打开 Settings |
+| **QuotaDeck: Set DeepSeek API key** | 用 Tern 原生输入框询问 DeepSeek Key |
+| **QuotaDeck: Refresh now** | 立即刷新，不等定时器 |
 
 每个窗口只有一个详情页：再次点击状态栏额度段会聚焦它，不会重复打开。详情页内按 `r` 刷新，按 `q`/Esc 关闭。点击服务商标题可折叠，折叠状态会记住。
 
@@ -123,8 +123,8 @@ DeepSeek 密钥和自定义接口都使用 Tern 原生输入框，支持正常�
 ## 限制
 
 - Codex 和 Copilot 使用未公开接口，可能随时变化。
-- Claude 和 Gemini 使用已保存的 Token，Quota 不负责刷新；Token 过期时请重新运行对应 CLI。
-- Quota 是窗口插件：读取窗口所在机器的数据，不读取远程主机。
+- Claude 和 Gemini 使用已保存的 Token，QuotaDeck 不负责刷新；Token 过期时请重新运行对应 CLI。
+- QuotaDeck 是窗口插件：读取窗口所在机器的数据，不读取远程主机。
 - 上下文显示各 Agent 最近的会话（每个最多 8 条），不一定对应某个 pane；并行会话时可能有歧义。
 - 上下文适配器目前覆盖 omp、Claude Code、Codex；其他 Agent 需要自己加适配器。窗口未知时仍显示已用 token，但不显示百分比。
 - 剩余额度历史从插件首次运行开始记录；Agent 本地日志没有可回溯的成本历史，花费图表需要成本来源。
@@ -164,5 +164,5 @@ return {
 ## 致谢
 
 - 基于 [Tern](https://stencil.so/tern)（Stencil）开发。
-- 各服务商名称、接口和 CLI 登录格式归各自厂商所有。Quota 是独立非官方客户端，未获得任何厂商背书。
+- 各服务商名称、接口和 CLI 登录格式归各自厂商所有。QuotaDeck 是独立非官方客户端，未获得任何厂商背书。
 - 仓库不包含厂商文档正文或真实凭据。

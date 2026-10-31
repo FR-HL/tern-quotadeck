@@ -1,6 +1,6 @@
 # Adapters
 
-Quota discovers adapters by directory. Add a `.luau` file; no core edit is
+QuotaDeck discovers adapters by directory. Add a `.luau` file; no core edit is
 needed.
 
 ```text
@@ -125,6 +125,6 @@ data. Credentials never leave the machine.
 tern plugin reload
 ```
 
-The plugin status must stay `ready`; open **Quota: Show details** and check the
+The plugin status must stay `ready`; open **QuotaDeck: Show details** and check the
 new card. Adapters run in-process: a broken adapter is other people's code, so
 review it before installing.
