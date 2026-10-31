@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.6 — 2026-10-31
+
+- Show only the bare model name in Context cards; provider prefixes and
+  account suffixes are removed.
+
 ## 0.8.5 — 2026-10-31
 
 - Read up to eight recent session files per agent instead of only the newest,

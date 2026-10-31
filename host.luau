@@ -1108,6 +1108,14 @@ local function context_ago(iso: any): string
 	return string.format("%dd", secs // 86400)
 end
 
+local function model_label(model: any): string?
+	if type(model) ~= "string" or model == "" then
+		return nil
+	end
+	local name = model:gsub("^.*/", ""):gsub("%s+@.*$", "")
+	return name ~= "" and name or model
+end
+
 context_section = function(selected: string?): any?
 	local l = lang()
 	local stored = tern.kv.get("context_state")
@@ -1131,7 +1139,7 @@ context_section = function(selected: string?): any?
 			tern.ui.el("div", { class = "q-row" }, {
 				tern.ui.node("icon", { name = session.icon or "activity" }),
 				tern.ui.text({ tern.ui.span(label, "strong") }),
-				tern.ui.badge(session.model or i18n.t(l, "context_unknown_model"), "muted"),
+				tern.ui.badge(model_label(session.model) or i18n.t(l, "context_unknown_model"), "muted"),
 			}),
 		}
 		local values: { any } = {
