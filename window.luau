@@ -161,8 +161,10 @@ local function segment(item: any): { [string]: any }?
 		}
 	end
 	if status == "ok" and type(window) ~= "table" and type(item.balance) == "string" then
+		local balance_text = item.balance_left and (item.balance_left .. " " .. i18n.t(l, "remaining"))
+			or (item.status_balance or item.balance)
 		return {
-			text = labelled(item.status_balance or item.balance),
+			text = labelled(balance_text),
 			icon = icon,
 			tone = nil,
 			command = "plugin.quotadeck.detail",

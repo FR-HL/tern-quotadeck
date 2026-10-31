@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.4 — 2026-10-31
+
+- Label relay money in the interface language: `剩余 $… · 已用 $…` in Chinese,
+  `Left $… · Used $…` in English.
+
 ## 0.9.3 — 2026-10-31
 
 - Convert New API credits to USD at 0.000002 per credit for the active Codex

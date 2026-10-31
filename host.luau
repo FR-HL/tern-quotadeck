@@ -143,6 +143,8 @@ local function item_from(meta: { [string]: any }, result: any): { [string]: any 
 		error = type(result) == "table" and result.error or nil,
 		plan = type(result) == "table" and result.plan or nil,
 		balance = type(result) == "table" and result.balance or nil,
+		balance_left = type(result) == "table" and result.balance_left or nil,
+		balance_used = type(result) == "table" and result.balance_used or nil,
 		status_balance = type(result) == "table" and result.status_balance or nil,
 		windows = windows,
 	}
@@ -686,6 +688,13 @@ local function provider_windows(item: any): any
 		end
 	end
 	if #rows == 0 then
+		if type(item.balance_left) == "string" then
+			return tern.ui.text({ tern.ui.span(
+				i18n.t(l, "remaining") .. " " .. item.balance_left
+					.. " · " .. i18n.t(l, "used") .. " " .. (item.balance_used or "—"),
+				"num"
+			) })
+		end
 		if type(item.balance) == "string" then
 			return tern.ui.text({ tern.ui.span(item.balance, "num") })
 		end

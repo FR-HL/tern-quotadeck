@@ -36,8 +36,8 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
 - Codex relay: the active custom provider in `~/.codex/config.toml` was
   detected as `My Codex` / `MC` and queried through New API
   `/api/usage/token/`; credits were converted to USD at 0.000002 each, and the
-  card showed `$1661.73 left · $2184.43 used` without asking for manual
-  configuration.
+  card showed `剩余 $1661.73 · 已用 $2184.43` in Chinese and `Left $… · Used $…`
+  in English, without asking for manual configuration.
 - Overview filter: the icon strip showed All, OpenCode Go, Codex, Claude and
   Open Design; choosing OpenCode kept only its quota card and dropped unrelated
   context, while Codex showed its context and All restored the complete page.

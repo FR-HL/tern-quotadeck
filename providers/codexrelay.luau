@@ -109,10 +109,12 @@ function provider.fetch(done: (any?) -> ())
 			return
 		end
 		if data.unlimited_quota == true or (granted ~= nil and granted <= 0) then
-			local left = available ~= nil and (money(available) .. " left") or nil
+			local left = available ~= nil and money(available) or nil
 			done({
 				status = "ok",
-				balance = left and (left .. " · " .. money(used) .. " used") or (money(used) .. " used"),
+				balance = left and (left .. " left · " .. money(used) .. " used") or (money(used) .. " used"),
+				balance_left = left,
+				balance_used = money(used),
 				status_balance = left,
 				name = cfg.name,
 				short = short_code(cfg.name),
@@ -128,7 +130,8 @@ function provider.fetch(done: (any?) -> ())
 			status = "ok",
 			windows = { quota = { used = math.max(0, math.min(100, used / granted * 100)) } },
 			balance = available ~= nil and (money(available) .. " left") or nil,
-			status_balance = available ~= nil and (money(available) .. " left") or nil,
+			balance_left = available ~= nil and money(available) or nil,
+			status_balance = available ~= nil and money(available) or nil,
 			name = cfg.name,
 			short = short_code(cfg.name),
 			plan = "Relay",
