@@ -59,6 +59,14 @@
 	background: transparent;
 }
 
+.q-card--clickable {
+	cursor: pointer;
+}
+
+.q-card--clickable:hover {
+	border-color: var(--t3);
+}
+
 .q-head {
 	display: flex;
 	align-items: center;

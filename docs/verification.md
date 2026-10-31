@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.8.7 · 2026-10-31
+Tern 0.9.8 · plugin 0.8.8 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 
@@ -24,9 +24,11 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
   agent (21 entries at once), with model, used/window, percentage and age;
   the model badge showed only `gpt-6.1-sol` / `deepseek-v4.1-flash`, without
   the provider prefix. Each card reused the provider icon from the quota card
-  (`provider-opencode`, `provider-openai`, `provider-claude`). omp's numeric
-  millisecond timestamp and Codex's direct context window were handled. The
-  bottom dock stayed at three tabs.
+  (`provider-opencode`, `provider-openai`, `provider-claude`). Clicking a card
+  expanded provider, full model, used/window, remaining, exact timestamp and
+  session path, then collapsed again. omp's numeric millisecond timestamp and
+  Codex's direct context window were handled. The bottom dock stayed at three
+  tabs.
 - Overview filter: the icon strip showed All, OpenCode Go, Codex, Claude and
   Open Design; choosing OpenCode kept only its quota card and dropped unrelated
   context, while Codex showed its context and All restored the complete page.

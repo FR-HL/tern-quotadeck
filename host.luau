@@ -818,7 +818,7 @@ local function main_view(state: any, settings_value: { [string]: any }, block_st
 			nodes[#nodes + 1] = provider_card(item, settings_value.collapsed[id] == true)
 		end
 	end
-	local context = context_section(selected)
+	local context = context_section(selected, block_state)
 	if #nodes == 0 and not context then
 		nodes[1] = tern.ui.text({ tern.ui.span(i18n.t(l, "no_providers"), "muted") })
 	end
@@ -1126,15 +1126,17 @@ local function model_label(model: any): string?
 	return name ~= "" and name or model
 end
 
-context_section = function(selected: string?): any?
+context_section = function(selected: string?, block_state: any): any?
 	local l = lang()
 	local stored = tern.kv.get("context_state")
 	local sessions = type(stored) == "table" and stored.sessions or nil
 	if type(sessions) ~= "table" or #sessions == 0 then
 		return nil
 	end
+	local open_map = type(block_state) == "table" and type(block_state.context_open) == "table"
+		and block_state.context_open or {}
 	local cards: { any } = {}
-	for _, session in ipairs(sessions) do
+	for index, session in ipairs(sessions) do
 		if selected and selected ~= "all" and context_provider(session) ~= selected then
 			continue
 		end
@@ -1145,11 +1147,17 @@ context_section = function(selected: string?): any?
 		if type(session.project) == "string" and session.project ~= "" then
 			label = label .. " · " .. session.project
 		end
+		local open = open_map[index] == true
 		local children: { any } = {
 			tern.ui.el("div", { class = "q-row" }, {
 				tern.ui.node("icon", { name = context_icon(session) }),
-				tern.ui.text({ tern.ui.span(label, "strong") }),
+				tern.ui.node("text", {
+					spans = { tern.ui.span(label, "strong") },
+					grow = 1,
+					min = { w = 0 },
+				}),
 				tern.ui.badge(model_label(session.model) or i18n.t(l, "context_unknown_model"), "muted"),
+				tern.ui.node("icon", { name = open and "chev-up" or "chev-r" }),
 			}),
 		}
 		local values: { any } = {
@@ -1188,7 +1196,35 @@ context_section = function(selected: string?): any?
 			min = { w = 0 },
 		})
 		children[#children + 1] = tern.ui.el("div", { class = "q-row" }, values)
-		cards[#cards + 1] = tern.ui.el("div", { class = "q-card" }, children)
+		if open then
+			local details = {
+				{ i18n.t(l, "context_provider"), context_provider(session) or "—" },
+				{ i18n.t(l, "context_model"), tostring(session.model or "—") },
+				{ i18n.t(l, "context_used"), compact_tokens(used) .. " " .. i18n.t(l, "context_tokens") },
+				{ i18n.t(l, "context_window"), window and compact_tokens(window) or "—" },
+				{ i18n.t(l, "context_remaining"), percent and string.format("%.0f%%", 100 - percent) or "—" },
+				{ i18n.t(l, "context_updated"), tostring(session.at or "—") },
+				{ i18n.t(l, "context_session"), tostring(session.path or "—") },
+			}
+			for _, row in ipairs(details) do
+				children[#children + 1] = tern.ui.el("div", { class = "q-row" }, {
+					tern.ui.node("text", {
+						spans = { tern.ui.span(row[1], "muted") },
+						basis = 0.24,
+						min = { w = 0 },
+					}),
+					tern.ui.node("text", {
+						spans = { tern.ui.span(row[2], "dim") },
+						grow = 1,
+						min = { w = 0 },
+					}),
+				})
+			end
+		end
+		cards[#cards + 1] = tern.ui.el("div", {
+			class = "q-card q-card--clickable",
+			actions = { click = "context_toggle=" .. index },
+		}, children)
 	end
 	if #cards == 0 then
 		return nil
@@ -1238,7 +1274,7 @@ tern.block.define("detail", {
 		if nav ~= nil then
 			tern.kv.set("navigate", nil)
 		end
-		return { seen = 0, filter = "all" }
+		return { seen = 0, filter = "all", context_open = {} }
 	end,
 	view = function(state: any, _cx: any): any
 		return block_view(state)
@@ -1272,6 +1308,13 @@ tern.block.define("detail", {
 		elseif ev.act == "filter" then
 			state.filter = ev.value or "all"
 			cx:render()
+		elseif ev.act == "context_toggle" then
+			local index = tonumber(ev.value)
+			if index then
+				state.context_open = type(state.context_open) == "table" and state.context_open or {}
+				state.context_open[index] = not state.context_open[index]
+				cx:render()
+			end
 		elseif ev.act == "view" then
 			block_view_name = (ev.value == "providers" and "providers")
 				or (ev.value == "settings" and "settings")

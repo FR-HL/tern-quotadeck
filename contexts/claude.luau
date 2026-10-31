@@ -34,6 +34,7 @@ function adapter.fetch(done: (any) -> ())
 					icon = adapter.icon,
 					provider = "claude",
 					project = util.project_of(cwd) or util.project_from_path(file.path),
+					path = file.path,
 					model = model,
 					used = used,
 					window = models.window(model),

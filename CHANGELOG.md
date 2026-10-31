@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.8 — 2026-10-31
+
+- Click a Context card to expand provider, full model, used/window,
+  remaining, exact timestamp and session file path.
+
 ## 0.8.7 — 2026-10-31
 
 - Use the provider icon in Context cards, matching the quota card, instead
