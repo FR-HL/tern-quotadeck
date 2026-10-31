@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.2 — 2026-10-31
+
+- Format relay credit counts compactly (`1.09B used · 831M left`) instead of
+  raw nine-digit numbers.
+
 ## 0.9.1 — 2026-10-31
 
 - Auto-detect the active custom Codex relay from ~/.codex/config.toml and

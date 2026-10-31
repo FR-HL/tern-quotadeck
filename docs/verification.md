@@ -35,8 +35,9 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
   up to 7 days.
 - Codex relay: the active custom provider in `~/.codex/config.toml` was
   detected as `My Codex` / `MC` and queried through New API
-  `/api/usage/token/`; the card showed its unlimited balance without asking for
-  manual configuration.
+  `/api/usage/token/`; the card showed a compact balance
+  `Unlimited · 1.09B used · 830.9M left` without asking for manual
+  configuration.
 - Overview filter: the icon strip showed All, OpenCode Go, Codex, Claude and
   Open Design; choosing OpenCode kept only its quota card and dropped unrelated
   context, while Codex showed its context and All restored the complete page.
