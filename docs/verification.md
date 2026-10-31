@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.7.4 · 2026-10-31
+Tern 0.9.8 · plugin 0.7.5 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 
@@ -8,11 +8,11 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
 
 - Overview: only signed-in quota cards; no login, key, configuration or status
   badge (a visible card is normal by definition).
-- Providers: every provider keeps its own Sign in/Key button; status and action
-  icons share one tile (34.6px at this scale, same background and border), and
-  only their color differs. Grid hides from the overview and gauge from the
-  status bar; changing one left the other unchanged. DeepSeek Key and the
-  Custom endpoint use Tern's native prompt and accept pasted text.
+- Providers: each provider has one status/sign-in control, not two. Normal
+  shows a check; signed out shows the sign-in icon; both never appear together.
+  Grid hides from the overview and gauge from the status bar; changing one left
+  the other unchanged. DeepSeek Key and the Custom endpoint use Tern's native
+  prompt and accept pasted text.
 - Magpie: Open Design and OpenCode Zen were discovered from
   `http://127.0.0.1:3425/v1/magpie/quotas` without manual configuration; the
   direct OpenCode Go card was not duplicated.

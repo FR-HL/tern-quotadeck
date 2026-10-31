@@ -90,9 +90,11 @@ Tern runs.
 DeepSeek keys and the custom endpoint use Tern's native prompt field, so normal
 clipboard paste works. The overview shows only providers that are signed in
 and have quota to draw; every provider is listed on **Providers** with
-icon-only controls: status, sign in or key, plus separate grid (overview) and
-gauge (status bar) visibility toggles, each labelled on hover. Magpie entries
-are read-only and marked **Auto**.
+one icon-only status control per provider. When the provider is normal it
+shows a check; when it is not, the same control is its **Sign in** / **Key**
+action, so both never appear together. Separate grid (overview) and gauge
+(status bar) toggles follow, each labelled on hover. Magpie entries are
+read-only and marked **Auto**.
 
 ## Commands
 
@@ -114,11 +116,11 @@ remembered.
 The page has three tabs in the bottom dock:
 
 - **Overview** — quota cards only. No login, key or provider settings.
-- **Providers** — icon-only **Sign in** / **Key**, status, and two visibility
-  toggles: **grid** controls the overview, **gauge** controls the status bar.
-  Each is labelled on hover; neither toggle signs you out. **Custom → Add
-  endpoint** asks for the name, base URL and key with Tern's native prompt,
-  then detects the quota protocol.
+- **Providers** — one icon-only status control per provider: a check when
+  normal, otherwise the **Sign in** / **Key** action. Then **grid** controls
+  the overview and **gauge** controls the status bar; each is labelled on
+  hover and neither signs you out. **Custom → Add endpoint** asks for the name,
+  base URL and key with Tern's native prompt, then detects the protocol.
 - **Settings** — refresh interval (1, 2 or 5 minutes), language (Auto,
   English, 中文), how the page opens (Floating by default; Tab, Docked), and
   the status-line format.

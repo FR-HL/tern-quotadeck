@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.5 — 2026-10-31
+
+- Merge status and sign-in/key into one control: a check when normal, the
+  action itself when not, so login and not-signed-in never both show.
+
 ## 0.7.4 — 2026-10-31
 
 - Remove the redundant status icon from overview cards.

@@ -542,6 +542,22 @@ local function add_visibility_buttons(actions: { any }, l: string, id: string, v
 	)
 end
 
+local function provider_control(item: any, id: string, l: string, auto: boolean): any
+	if not auto and item.status ~= "ok" then
+		local setup_label = id == "deepseek" and i18n.t(l, "set_key") or i18n.t(l, "sign_in")
+		local setup_icon = id == "deepseek" and "key" or "log-in"
+		local tone = item.status == "signed_out" and "q-icon-choice--primary" or "q-icon-choice--danger"
+		local label = setup_label
+		if item.status == "auth" then
+			label = i18n.t(l, "auth") .. " · " .. setup_label
+		elseif item.status ~= "signed_out" then
+			label = i18n.t(l, "unavailable") .. " · " .. setup_label
+		end
+		return icon_button(setup_icon, label, "setup=" .. id, "q-choice q-icon-choice " .. tone)
+	end
+	return status_icon(item.status)
+end
+
 local function reset_text(iso: any): string
 	if type(iso) ~= "string" then
 		return ""
@@ -653,16 +669,6 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 			local status_hidden = settings_value.hidden_status[id] == true
 			local actions: { any } = {}
 			local auto = item.source == "magpie"
-			if not auto then
-				local setup_label = id == "deepseek" and i18n.t(l, "set_key") or i18n.t(l, "sign_in")
-				local setup_icon = id == "deepseek" and "key" or "log-in"
-				actions[#actions + 1] = icon_button(
-					setup_icon,
-					setup_label,
-					"setup=" .. id,
-					"q-choice q-icon-choice q-icon-choice--primary"
-				)
-			end
 			add_visibility_buttons(actions, l, id, hidden, status_hidden)
 			local name_spans = { tern.ui.span(item.name or id, "strong") }
 			if auto then
@@ -675,7 +681,7 @@ local function providers_view(state: any, settings_value: { [string]: any }): an
 					basis = 0.30,
 					min = { w = 0 },
 				}),
-				status_icon(item.status),
+				provider_control(item, id, l, auto),
 				tern.ui.el("div", { class = "q-choices" }, actions),
 			})
 		end
