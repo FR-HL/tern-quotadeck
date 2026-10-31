@@ -132,11 +132,13 @@ local function item_from(meta: { [string]: any }, result: any): { [string]: any 
 			}
 		end
 	end
+	local name = type(result) == "table" and result.name or meta.name
 	return {
 		id = meta.id,
-		name = meta.name,
-		short = meta.short or meta.name,
-		icon = meta.icon,
+		name = name,
+		short = type(result) == "table" and result.short or meta.short or name,
+		icon = type(result) == "table" and result.icon or meta.icon,
+		source = type(result) == "table" and result.source or meta.source,
 		status = type(result) == "table" and result.status or "error",
 		error = type(result) == "table" and result.error or nil,
 		plan = type(result) == "table" and result.plan or nil,
@@ -717,7 +719,8 @@ local function provider_card(item: any, collapsed: boolean): any
 	local children = { header }
 	if not collapsed then
 		children[#children + 1] = provider_windows(item)
-		if type(item.balance) == "string" and item.balance ~= "" then
+		local has_windows = type(item.windows) == "table" and #item.windows > 0
+		if has_windows and type(item.balance) == "string" and item.balance ~= "" then
 			children[#children + 1] = tern.ui.text({ tern.ui.span(item.balance, "dim") })
 		end
 		if item.status ~= "ok" and item.error then

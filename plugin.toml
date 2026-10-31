@@ -1,7 +1,7 @@
 schema = 1
 id = "quotadeck"
 name = "QuotaDeck"
-version = "0.9.0"
+version = "0.9.1"
 description = "Remaining quota, reset countdowns and network speed for coding-agent plans in Tern."
 icon = "gauge"
 host = "host.luau"

@@ -24,6 +24,8 @@ hides the other providers.
   is loaded automatically
 - Magpie's providers appear automatically through its local quota API,
   including Open Design and plugin-managed accounts
+- Active custom Codex relays are read from `~/.codex/config.toml`; CC Switch
+  and CC GUI need no database parsing
 - One custom endpoint that detects New API / One API relays or OpenAI billing
 - Status line with configurable remaining/used value, window label, reset
   countdown, percentage and network speed
@@ -102,6 +104,7 @@ Tern runs.
 | Gemini CLI | `~/.gemini/oauth_creds.json` | Code Assist quota; read-only, no token refresh |
 | DeepSeek | Providers → **Key**, `DEEPSEEK_API_KEY`, or **QuotaDeck: Set DeepSeek API key** | Account balance (`¥`/`$`), no percentage windows |
 | Magpie | `http://127.0.0.1:3425/v1/magpie/quotas` | Auto-detected; includes Open Design and plugin providers Magpie tracks |
+| Codex relay | `~/.codex/config.toml` | Active custom `model_providers` entry; reads New API `/api/usage/token/` |
 | Custom endpoint | Providers → **Custom → Add endpoint** | Auto-detects New API `/api/usage/token/` or OpenAI `dashboard/billing` |
 
 DeepSeek keys and the custom endpoint use Tern's native prompt field, so normal

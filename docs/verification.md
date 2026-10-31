@@ -33,6 +33,10 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
   spark (`Context history · N`) and the matching provider's remaining history
   spark (`Remaining history · N`) from local samples; the history store keeps
   up to 7 days.
+- Codex relay: the active custom provider in `~/.codex/config.toml` was
+  detected as `My Codex` / `MC` and queried through New API
+  `/api/usage/token/`; the card showed its unlimited balance without asking for
+  manual configuration.
 - Overview filter: the icon strip showed All, OpenCode Go, Codex, Claude and
   Open Design; choosing OpenCode kept only its quota card and dropped unrelated
   context, while Codex showed its context and All restored the complete page.

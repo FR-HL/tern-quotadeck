@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.1 — 2026-10-31
+
+- Auto-detect the active custom Codex relay from ~/.codex/config.toml and
+  query its New API token balance. Works with CC Switch/CC GUI without reading
+  their databases.
+
 ## 0.9.0 — 2026-10-31
 
 - Full rename to QuotaDeck: plugin id `quotadeck`, block kind
