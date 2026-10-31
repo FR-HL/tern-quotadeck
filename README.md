@@ -131,9 +131,9 @@ remembered.
 The page has three tabs in the bottom dock:
 
 - **Overview** — a provider icon strip filters the page; quota cards follow,
-  then a **Context** section with each agent's latest session from its own log
-  (omp, Claude Code and Codex): used/window, percentage and age. No login, key
-  or provider settings.
+  then a **Context** section with up to eight recent sessions per agent from
+  its own log (omp, Claude Code and Codex): used/window, percentage and age.
+  No login, key or provider settings.
 - **Providers** — one icon-only status control per provider: a check when
   normal, otherwise the **Sign in** / **Key** action. Then **grid** controls
   the overview and **gauge** controls the status bar; each is labelled on
@@ -164,8 +164,8 @@ private to your user account, not as a secret vault.
   Re-run the provider CLI if a token expires.
 - Quota is a window plugin: it reads the machine the window runs on, not a
   remote host's.
-- Context shows each agent's latest session, not necessarily the session in a
-  particular pane; parallel sessions can make that ambiguous.
+- Context shows recent sessions (up to eight per agent), not necessarily the
+  session in a particular pane; parallel sessions can make that ambiguous.
 - Context adapters currently cover omp, Claude Code and Codex. Other agents
   need an adapter; a session without a known context window still shows used
   tokens, without a percentage.

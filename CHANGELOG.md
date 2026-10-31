@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.5 — 2026-10-31
+
+- Read up to eight recent session files per agent instead of only the newest,
+  so the Context section shows more history.
+
 ## 0.8.4 — 2026-10-31
 
 - Add a Hidden name style to the status line.

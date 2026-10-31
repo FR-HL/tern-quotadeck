@@ -26,44 +26,41 @@ local function windows(): { [string]: number }
 end
 
 function adapter.fetch(done: (any) -> ())
-	util.latest(util.home() .. "/.omp/agent/sessions", function(path, tail, head)
-		if not path or not tail then
-			done({})
-			return
-		end
-		local used, model, at
-		for line in tail:gmatch("[^\r\n]+") do
-			local value = util.decode(line)
-			local message = type(value) == "table" and value.message or nil
-			local snapshot = type(message) == "table" and message.contextSnapshot or nil
-			if type(snapshot) == "table" and type(snapshot.promptTokens) == "number" then
-				used = snapshot.promptTokens
-				model = message.model
-				at = message.timestamp or value.timestamp
+	local known = windows()
+	util.recent(util.home() .. "/.omp/agent/sessions", 8, function(files)
+		local out = {}
+		for _, file in ipairs(files) do
+			local used, model, at
+			for line in file.tail:gmatch("[^\r\n]+") do
+				local value = util.decode(line)
+				local message = type(value) == "table" and value.message or nil
+				local snapshot = type(message) == "table" and message.contextSnapshot or nil
+				if type(snapshot) == "table" and type(snapshot.promptTokens) == "number" then
+					used = snapshot.promptTokens
+					model = message.model
+					at = message.timestamp or value.timestamp
+				end
+			end
+			if used then
+				local cwd = util.cwd_of(file.head or file.tail)
+				local window = model and (known[model] or models.window(model)) or nil
+				local provider = type(model) == "string" and model:match("^([^/]+)/") or "opencode"
+				if provider == "opencode-go" then
+					provider = "opencode"
+				end
+				out[#out + 1] = {
+					agent = adapter.name,
+					icon = adapter.icon,
+					provider = provider,
+					project = util.project_of(cwd) or util.project_from_path(file.path),
+					model = model,
+					used = used,
+					window = window,
+					at = at,
+				}
 			end
 		end
-		if not used then
-			done({})
-			return
-		end
-		local cwd = util.cwd_of(head or tail)
-		local window = model and (windows()[model] or models.window(model)) or nil
-		local provider = type(model) == "string" and model:match("^([^/]+)/") or "opencode"
-		if provider == "opencode-go" then
-			provider = "opencode"
-		end
-		done({
-			{
-				agent = adapter.name,
-				icon = adapter.icon,
-				provider = provider,
-				project = util.project_of(cwd) or util.project_from_path(path),
-				model = model,
-				used = used,
-				window = window,
-				at = at,
-			},
-		})
+		done(out)
 	end)
 end
 

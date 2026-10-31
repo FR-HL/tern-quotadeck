@@ -7,8 +7,10 @@ function util.home(): string
 	return tern.getenv("USERPROFILE") or tern.getenv("HOME") or ""
 end
 
--- Returns the newest *.jsonl under root and its last lines.
-function util.latest(root: string, done: (string?, string?, string?) -> ())
+-- Returns up to limit newest *.jsonl files under root, with first and last
+-- lines of each. Every record is { path, head, tail }.
+function util.recent(root: string, limit: number, done: (any) -> ())
+	limit = math.max(1, limit or 1)
 	local command
 	if tern.runtime.os == "windows" then
 		local quoted = root:gsub("'", "''")
@@ -16,38 +18,57 @@ function util.latest(root: string, done: (string?, string?, string?) -> ())
 			"powershell",
 			"-NoProfile",
 			"-Command",
-			"$f = Get-ChildItem -LiteralPath '" .. quoted .. "' -Recurse -Filter *.jsonl -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($f) { Write-Output ('__FILE__' + $f.FullName); Write-Output ('__HEAD__' + (Get-Content -LiteralPath $f.FullName -TotalCount 1)); Get-Content -LiteralPath $f.FullName -Tail 80 }",
+			"$files = Get-ChildItem -LiteralPath '" .. quoted .. "' -Recurse -Filter *.jsonl -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First " .. limit
+				.. "; foreach ($f in $files) { Write-Output ('__FILE__' + $f.FullName); Write-Output ('__HEAD__' + (Get-Content -LiteralPath $f.FullName -TotalCount 1)); Get-Content -LiteralPath $f.FullName -Tail 40 }",
 		}
 	else
 		command = {
 			"sh",
 			"-c",
-			'f=$(find "$1" -type f -name "*.jsonl" -exec ls -t {} + 2>/dev/null | head -1); [ -n "$f" ] && { echo "__FILE__$f"; echo "__HEAD__$(head -n 1 "$f")"; tail -n 80 "$f"; }',
+			'find "$1" -type f -name "*.jsonl" -exec ls -t {} + 2>/dev/null | head -n "$2" | while IFS= read -r f; do echo "__FILE__$f"; echo "__HEAD__$(head -n 1 "$f")"; tail -n 40 "$f"; done',
 			"sh",
 			root,
+			tostring(limit),
 		}
 	end
-	tern.process.run(command, { timeout_ms = 10_000 }, function(result)
+	tern.process.run(command, { timeout_ms = 15_000 }, function(result)
 		if not result or result.status ~= 0 or type(result.stdout) ~= "string" then
-			done(nil, nil)
+			done({})
 			return
 		end
-		local path, head
-		local lines = {}
+		local files = {}
+		local current = nil
 		for line in result.stdout:gmatch("[^\r\n]+") do
-			if not path and line:sub(1, 8) == "__FILE__" then
-				path = line:sub(9)
-			elseif path and not head and line:sub(1, 8) == "__HEAD__" then
-				head = line:sub(9)
-			elseif path then
-				lines[#lines + 1] = line
+			if line:sub(1, 8) == "__FILE__" then
+				if current then
+					files[#files + 1] = current
+				end
+				current = { path = line:sub(9), head = nil, lines = {} }
+			elseif current and not current.head and line:sub(1, 8) == "__HEAD__" then
+				current.head = line:sub(9)
+			elseif current then
+				current.lines[#current.lines + 1] = line
 			end
 		end
-		if not path then
-			done(nil, nil)
-			return
+		if current then
+			files[#files + 1] = current
 		end
-		done(path, table.concat(lines, "\n"), head)
+		for _, file in ipairs(files) do
+			file.tail = table.concat(file.lines, "\n")
+			file.lines = nil
+		end
+		done(files)
+	end)
+end
+
+function util.latest(root: string, done: (string?, string?, string?) -> ())
+	util.recent(root, 1, function(files)
+		local file = files[1]
+		if file then
+			done(file.path, file.tail, file.head)
+		else
+			done(nil, nil, nil)
+		end
 	end)
 end
 
