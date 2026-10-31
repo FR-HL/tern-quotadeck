@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.4 — 2026-10-31
+
+- Add a Hidden name style to the status line.
+- Add an Icon toggle for provider icons in the status line.
+
 ## 0.8.3 — 2026-10-31
 
 - Normalize status-line window labels (5h/7d/mo) and provider names across

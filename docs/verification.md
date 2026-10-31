@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.8.3 · 2026-10-31
+Tern 0.9.8 · plugin 0.8.4 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 
@@ -32,8 +32,9 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
 - Status line: modules are separated with `|`; items inside one provider module
   are not split. The separator is its own segment with the default white color
   and does not inherit the download or upload tone. Window labels normalize to
-  `5h`/`7d`/`mo`, and the Names setting switched between `OD`/`OC` and full
-  names. Example:
+  `5h`/`7d`/`mo`, and the Names setting switched between `OD`/`OC`, full
+  names, and hidden (`5h 2h38m 88%`). The Icon toggle removed the provider icon
+  SVG entirely. Example:
 
   ```text
   OD 5h 2h51m 93% | OC 5h 2h41m 91% | ↓ 2.3 MB/s ↑ 38 KB/s

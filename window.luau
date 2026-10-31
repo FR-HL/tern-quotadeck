@@ -89,7 +89,8 @@ local function status_format(settings: any): { [string]: any }
 	local tones = { success = true, error = true, warning = true, info = true, accent = true, muted = true, neutral = true }
 	return {
 		mode = sf.mode == "used" and "used" or "remaining",
-		names = sf.names == "full" and "full" or "short",
+		names = sf.names == "full" and "full" or (sf.names == "none" and "none" or "short"),
+		icon = sf.icon ~= false,
 		window = sf.window ~= false,
 		reset = sf.reset ~= false,
 		percent = sf.percent ~= false,
@@ -119,9 +120,16 @@ local function segment(item: any): { [string]: any }?
 	if status == "signed_out" then
 		return nil
 	end
-	local name = sf.names == "full"
-		and (item.name or item.short or "quota")
-		or (item.short or item.name or "quota")
+	local name
+	if sf.names ~= "none" then
+		name = sf.names == "full"
+			and (item.name or item.short or "quota")
+			or (item.short or item.name or "quota")
+	end
+	local icon = sf.icon and (item.icon or "puzzle") or nil
+	local function labelled(value: string): string
+		return name and (name .. " " .. value) or value
+	end
 	local window = type(item.windows) == "table" and item.windows[1] or nil
 	if status == "ok" and type(window) == "table" then
 		local left = remaining(window.used)
@@ -129,40 +137,42 @@ local function segment(item: any): { [string]: any }?
 		local delta = short_delta(window.resets_at)
 		local used = math.max(0, math.min(100, math.floor(window.used + 0.5)))
 		local pct = sf.mode == "used" and used or math.floor(left + 0.5)
-		local text = name
-		local first = {}
+		local parts = {}
+		if name then
+			parts[#parts + 1] = name
+		end
 		if sf.window then
-			first[#first + 1] = label
+			parts[#parts + 1] = label
 		end
 		if sf.reset and delta ~= "" then
-			first[#first + 1] = delta
-		end
-		if #first > 0 then
-			text = text .. " " .. table.concat(first, " ")
+			parts[#parts + 1] = delta
 		end
 		if sf.percent then
-			text = #first > 0 and (text .. " " .. pct .. "%") or (text .. " " .. pct .. "%")
+			parts[#parts + 1] = pct .. "%"
+		end
+		if #parts == 0 then
+			return nil
 		end
 		return {
-			text = text,
-			icon = item.icon or "puzzle",
+			text = table.concat(parts, " "),
+			icon = icon,
 			tone = left < 20 and "error" or nil,
 			command = "plugin.quota.detail",
 		}
 	end
 	if status == "ok" and type(window) ~= "table" and type(item.balance) == "string" then
 		return {
-			text = string.format("%s %s", name, item.balance),
-			icon = item.icon or "puzzle",
+			text = labelled(item.balance),
+			icon = icon,
 			tone = nil,
 			command = "plugin.quota.detail",
 		}
 	end
 	if status == "auth" then
-		return { text = name .. " " .. i18n.t(l, "auth"), icon = item.icon or "puzzle", tone = "error", command = "plugin.quota.detail" }
+		return { text = labelled(i18n.t(l, "auth")), icon = icon, tone = "error", command = "plugin.quota.detail" }
 	end
 	if status == "error" then
-		return { text = name .. " " .. i18n.t(l, "unavailable"), icon = item.icon or "puzzle", tone = "error", command = "plugin.quota.detail" }
+		return { text = labelled(i18n.t(l, "unavailable")), icon = icon, tone = "error", command = "plugin.quota.detail" }
 	end
 	return nil
 end
@@ -197,6 +207,7 @@ local function format_signature(settings: any): string
 	return table.concat({
 		sf.mode,
 		sf.names,
+		tostring(sf.icon),
 		tostring(sf.window),
 		tostring(sf.reset),
 		tostring(sf.percent),

@@ -76,8 +76,11 @@ local function settings(): { [string]: any }
 	if sf.mode ~= "used" then
 		sf.mode = "remaining"
 	end
-	if sf.names ~= "full" then
+	if sf.names ~= "full" and sf.names ~= "none" then
 		sf.names = "short"
+	end
+	if type(sf.icon) ~= "boolean" then
+		sf.icon = true
 	end
 	if type(sf.window) ~= "boolean" then
 		sf.window = true
@@ -975,6 +978,7 @@ local function settings_view(state: any, settings_value: { [string]: any }): any
 	for _, option in ipairs({
 		{ "short", i18n.t(l, "short_names") },
 		{ "full", i18n.t(l, "full_names") },
+		{ "none", i18n.t(l, "hidden_names") },
 	}) do
 		local value, label = option[1], option[2]
 		name_options[#name_options + 1] = tern.ui.el("button", {
@@ -988,6 +992,7 @@ local function settings_view(state: any, settings_value: { [string]: any }): any
 		{ "window", i18n.t(l, "window") },
 		{ "reset", i18n.t(l, "reset") },
 		{ "percent", i18n.t(l, "percent") },
+		{ "icon", i18n.t(l, "icon") },
 		{ "net", i18n.t(l, "speed") },
 	}) do
 		local key, label = option[1], option[2]
@@ -1300,12 +1305,13 @@ tern.block.define("detail", {
 			tern.kv.set("settings", current)
 			cx:render()
 		elseif ev.act == "status_names" then
-			current.status_format.names = ev.value == "full" and "full" or "short"
+			current.status_format.names = ev.value == "full" and "full"
+				or (ev.value == "none" and "none" or "short")
 			tern.kv.set("settings", current)
 			cx:render()
 		elseif ev.act == "status_toggle" then
 			local key = ev.value
-			if key == "window" or key == "reset" or key == "percent" or key == "net" then
+			if key == "window" or key == "reset" or key == "percent" or key == "net" or key == "icon" then
 				current.status_format[key] = not current.status_format[key]
 				tern.kv.set("settings", current)
 				cx:render()
