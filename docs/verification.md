@@ -1,6 +1,6 @@
 # UI verification
 
-Tern 0.9.8 · plugin 0.7.5 · 2026-10-31
+Tern 0.9.8 · plugin 0.7.6 · 2026-10-31
 
 Checked by clicking the live plugin in Tern, not only by reading the source.
 
@@ -22,7 +22,8 @@ Checked by clicking the live plugin in Tern, not only by reading the source.
 - Settings: refresh interval, language, open mode, remaining/used value, and
   window/countdown/percentage/network toggles all take effect immediately.
 - Status line: modules are separated with `|`; items inside one provider module
-  are not split. Example:
+  are not split. The separator is its own segment with the default white color
+  and does not inherit the download or upload tone. Example:
 
   ```text
   OC 5h 4h32m 96% | ↓ 2.3 MB/s ↑ 38 KB/s

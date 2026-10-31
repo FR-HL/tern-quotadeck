@@ -189,15 +189,18 @@ local function rebuild()
 	local hidden = type(settings) == "table" and type(settings.hidden_status) == "table" and settings.hidden_status or {}
 	local l = i18n.resolve(type(settings) == "table" and settings.lang or "auto")
 	local out = {}
+	local function push(value: any)
+		if #out > 0 then
+			out[#out + 1] = { text = "|" }
+		end
+		out[#out + 1] = value
+	end
 	for _, id in ipairs(stored.order or {}) do
 		local item = stored.providers and stored.providers[id]
 		if hidden[id] ~= true then
 			local value = segment(item)
 			if value then
-				if #out > 0 then
-					value.text = "| " .. value.text
-				end
-				out[#out + 1] = value
+				push(value)
 			end
 		end
 	end
@@ -206,14 +209,11 @@ local function rebuild()
 		and os.time() - (tonumber(net.at) or 0) <= 12 then
 		local down_text = "↓ " .. speed_text(net.down)
 		local up_text = "↑ " .. speed_text(net.up)
-		if #out > 0 then
-			down_text = "| " .. down_text
-		end
-		out[#out + 1] = {
+		push({
 			text = down_text,
 			tone = sf.net_down,
 			command = "plugin.quota.settings",
-		}
+		})
 		out[#out + 1] = {
 			text = up_text,
 			tone = sf.net_up,

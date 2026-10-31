@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.6 — 2026-10-31
+
+- Keep the status-line separator a separate white segment instead of
+  inheriting the download or upload color.
+
 ## 0.7.5 — 2026-10-31
 
 - Merge status and sign-in/key into one control: a check when normal, the
