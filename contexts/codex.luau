@@ -14,6 +14,7 @@ function adapter.fetch(done: (any) -> ())
 		local out = {}
 		for _, file in ipairs(files) do
 			local used, window, model, at
+			local history = {}
 			for line in file.tail:gmatch("[^\r\n]+") do
 				local value = util.decode(line)
 				local payload = type(value) == "table" and value.payload or nil
@@ -27,8 +28,12 @@ function adapter.fetch(done: (any) -> ())
 						used = last.input_tokens
 						window = tonumber(info.model_context_window)
 						at = value.timestamp
+						history[#history + 1] = { at = at, used = used }
 					end
 				end
+			end
+			while #history > 48 do
+				table.remove(history, 1)
 			end
 			if used then
 				local cwd = util.cwd_of(file.head) or util.cwd_of(file.tail)
@@ -44,6 +49,7 @@ function adapter.fetch(done: (any) -> ())
 					used = used,
 					window = window,
 					at = at,
+					history = history,
 				}
 			end
 		end

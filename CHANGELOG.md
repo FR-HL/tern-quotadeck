@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.10 — 2026-10-31
+
+- Move history charts into expanded Context details: context-token history and
+  provider remaining history. Remove the quota-card sparkline.
+
 ## 0.8.9 — 2026-10-31
 
 - Record up to seven days of remaining-quota samples.

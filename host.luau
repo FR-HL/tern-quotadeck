@@ -708,7 +708,7 @@ local function history_series(state: any, id: string, limit: number): { any }
 	return values
 end
 
-local function provider_card(item: any, collapsed: boolean, state: any): any
+local function provider_card(item: any, collapsed: boolean): any
 	local header = tern.ui.el("button", { class = "q-head", actions = { click = "fold=" .. item.id } }, {
 		tern.ui.node("icon", { name = item.icon or "puzzle" }),
 		tern.ui.text({ tern.ui.span(item.name or item.id or "Provider", "strong") }),
@@ -717,15 +717,6 @@ local function provider_card(item: any, collapsed: boolean, state: any): any
 	local children = { header }
 	if not collapsed then
 		children[#children + 1] = provider_windows(item)
-		local series = history_series(state, item.id, 48)
-		if #series > 1 then
-			children[#children + 1] = tern.ui.node("chart", {
-				kind = "spark",
-				token = "success",
-				series = series,
-				summary = i18n.t(lang(), "history_remaining") .. " · " .. #series,
-			})
-		end
 		if type(item.balance) == "string" and item.balance ~= "" then
 			children[#children + 1] = tern.ui.text({ tern.ui.span(item.balance, "dim") })
 		end
@@ -841,7 +832,7 @@ local function main_view(state: any, settings_value: { [string]: any }, block_st
 		local item = state.providers and state.providers[id]
 		if type(item) == "table" and settings_value.hidden[id] ~= true and item.status == "ok"
 			and (selected == "all" or id == selected) then
-			nodes[#nodes + 1] = provider_card(item, settings_value.collapsed[id] == true, state)
+			nodes[#nodes + 1] = provider_card(item, settings_value.collapsed[id] == true)
 		end
 	end
 	local context = context_section(selected, block_state)
@@ -1244,6 +1235,33 @@ context_section = function(selected: string?, block_state: any): any?
 						grow = 1,
 						min = { w = 0 },
 					}),
+				})
+			end
+			local context_series = {}
+			for _, point in ipairs(session.history or {}) do
+				if type(point.used) == "number" then
+					context_series[#context_series + 1] = {
+						value = point.used,
+						label = context_ago(point.at),
+					}
+				end
+			end
+			if #context_series > 1 then
+				children[#children + 1] = tern.ui.node("chart", {
+					kind = "spark",
+					token = "accent",
+					series = context_series,
+					summary = i18n.t(l, "context_history") .. " · " .. #context_series,
+				})
+			end
+			local provider = context_provider(session)
+			local remaining = provider and history_series(tern.kv.get("state"), provider, 48) or {}
+			if #remaining > 1 then
+				children[#children + 1] = tern.ui.node("chart", {
+					kind = "spark",
+					token = "success",
+					series = remaining,
+					summary = i18n.t(l, "history_remaining") .. " · " .. #remaining,
 				})
 			end
 		end

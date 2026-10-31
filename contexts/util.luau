@@ -19,13 +19,13 @@ function util.recent(root: string, limit: number, done: (any) -> ())
 			"-NoProfile",
 			"-Command",
 			"$files = Get-ChildItem -LiteralPath '" .. quoted .. "' -Recurse -Filter *.jsonl -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First " .. limit
-				.. "; foreach ($f in $files) { Write-Output ('__FILE__' + $f.FullName); Write-Output ('__HEAD__' + (Get-Content -LiteralPath $f.FullName -TotalCount 1)); Get-Content -LiteralPath $f.FullName -Tail 40 }",
+				.. "; foreach ($f in $files) { Write-Output ('__FILE__' + $f.FullName); Write-Output ('__HEAD__' + (Get-Content -LiteralPath $f.FullName -TotalCount 1)); Get-Content -LiteralPath $f.FullName -Tail 120 }",
 		}
 	else
 		command = {
 			"sh",
 			"-c",
-			'find "$1" -type f -name "*.jsonl" -exec ls -t {} + 2>/dev/null | head -n "$2" | while IFS= read -r f; do echo "__FILE__$f"; echo "__HEAD__$(head -n 1 "$f")"; tail -n 40 "$f"; done',
+			'find "$1" -type f -name "*.jsonl" -exec ls -t {} + 2>/dev/null | head -n "$2" | while IFS= read -r f; do echo "__FILE__$f"; echo "__HEAD__$(head -n 1 "$f")"; tail -n 120 "$f"; done',
 			"sh",
 			root,
 			tostring(limit),

@@ -18,7 +18,8 @@ hides the other providers.
   logs directly
 - Provider icon strip on Overview: click one to show only that provider's
   quota and sessions; click **All** to restore
-- Remaining-history sparkline on each quota card, from locally recorded samples
+- Expanded Context details include context-token history and provider
+  remaining-history charts
 - Drop-in adapters: every `.luau` in `providers/`, `sources/` and `contexts/`
   is loaded automatically
 - Magpie's providers appear automatically through its local quota API,
@@ -135,7 +136,8 @@ The page has three tabs in the bottom dock:
   then a **Context** section with up to eight recent sessions per agent from
   its own log (omp, Claude Code and Codex): the provider icon, bare model
   name, used/window, percentage and age. Click a card for provider, full model,
-  exact timestamp and session path. No login, key or provider settings.
+  exact timestamp, session path, context-token history and provider remaining
+  history charts. No login, key or provider settings.
 - **Providers** — one icon-only status control per provider: a check when
   normal, otherwise the **Sign in** / **Key** action. Then **grid** controls
   the overview and **gauge** controls the status bar; each is labelled on
